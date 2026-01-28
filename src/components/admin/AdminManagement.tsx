@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import * as adminService from '../../services/admin';
 import {
   Users,
   UserPlus,
@@ -9,6 +10,8 @@ import {
   Shield,
   ShieldCheck,
   ShieldOff,
+  UserCheck,
+  UserX,
   Mail,
   Phone,
   Calendar,
@@ -17,101 +20,15 @@ import {
   X,
   Save,
   Loader2,
-  CheckCircle,
-  AlertCircle,
   Lock,
-  Unlock,
-  UserCheck,
-  UserX
+  Unlock
 } from 'lucide-react';
 
-interface AdminUser {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: 'super-admin' | 'admin' | 'manager' | 'staff';
-  status: 'active' | 'inactive' | 'suspended';
-  avatar: string;
-  createdDate: string;
-  lastLogin: string;
-  permissions: string[];
+interface AdminManagementProps {
+  admins: adminService.AdminUser[];
+  onUpdateAdmins: (admins: adminService.AdminUser[]) => void;
+  onRefresh?: () => void;
 }
-
-const mockAdmins: AdminUser[] = [
-  {
-    id: '1',
-    name: 'Tejman Tamang',
-    email: 'tejman@pslnepal.com',
-    phone: '+977 9841243981',
-    role: 'super-admin',
-    status: 'active',
-    avatar: 'TT',
-    createdDate: '2011-01-15',
-    lastLogin: '2026-01-16 09:30',
-    permissions: ['all']
-  },
-  {
-    id: '2',
-    name: 'Manoj Thapa',
-    email: 'manoj@pslnepal.com',
-    phone: '+977 9841234567',
-    role: 'super-admin',
-    status: 'active',
-    avatar: 'MT',
-    createdDate: '2011-01-15',
-    lastLogin: '2026-01-16 08:45',
-    permissions: ['all']
-  },
-  {
-    id: '3',
-    name: 'Admin User',
-    email: 'admin@pslnepal.com',
-    phone: '+977 9851234567',
-    role: 'admin',
-    status: 'active',
-    avatar: 'AU',
-    createdDate: '2015-06-10',
-    lastLogin: '2026-01-16 10:15',
-    permissions: ['shipments', 'customers', 'reports']
-  },
-  {
-    id: '4',
-    name: 'Sita Shrestha',
-    email: 'sita.s@pslnepal.com',
-    phone: '+977 9801234567',
-    role: 'manager',
-    status: 'active',
-    avatar: 'SS',
-    createdDate: '2018-03-22',
-    lastLogin: '2026-01-15 16:20',
-    permissions: ['shipments', 'customers']
-  },
-  {
-    id: '5',
-    name: 'Ram Gurung',
-    email: 'ram.g@pslnepal.com',
-    phone: '+977 9861234567',
-    role: 'staff',
-    status: 'active',
-    avatar: 'RG',
-    createdDate: '2020-08-05',
-    lastLogin: '2026-01-15 18:30',
-    permissions: ['shipments']
-  },
-  {
-    id: '6',
-    name: 'Kabita Rai',
-    email: 'kabita.r@pslnepal.com',
-    phone: '+977 9871234567',
-    role: 'staff',
-    status: 'inactive',
-    avatar: 'KR',
-    createdDate: '2019-11-12',
-    lastLogin: '2026-01-10 14:00',
-    permissions: ['customers']
-  }
-];
 
 const roleColors = {
   'super-admin': 'bg-[#DC143C] text-white border-[#DC143C]',
@@ -126,23 +43,24 @@ const statusColors = {
   'suspended': 'bg-red-100 text-red-800 border-red-300'
 };
 
-export function AdminManagement() {
-  const [admins, setAdmins] = useState<AdminUser[]>(mockAdmins);
+export function AdminManagement({ admins, onUpdateAdmins, onRefresh }: AdminManagementProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedAdmin, setSelectedAdmin] = useState<AdminUser | null>(null);
+  const [selectedAdmin, setSelectedAdmin] = useState<adminService.AdminUser | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
   // Form state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    role: 'staff' as AdminUser['role'],
+    role: 'staff' as adminService.AdminUser['role'],
     password: '',
     confirmPassword: ''
   });
@@ -155,7 +73,7 @@ export function AdminManagement() {
       filtered = filtered.filter(admin =>
         admin.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         admin.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        admin.phone.includes(searchQuery)
+        (admin.phone && admin.phone.includes(searchQuery))
       );
     }
 
@@ -191,67 +109,116 @@ export function AdminManagement() {
       confirmPassword: ''
     });
     setSelectedAdmin(null);
+    setError('');
     setShowCreateModal(true);
   };
 
-  const handleEditAdmin = (admin: AdminUser) => {
+  const handleEditAdmin = (admin: adminService.AdminUser) => {
     setSelectedAdmin(admin);
     setFormData({
       name: admin.name,
       email: admin.email,
-      phone: admin.phone,
+      phone: admin.phone || '',
       role: admin.role,
       password: '',
       confirmPassword: ''
     });
+    setError('');
     setShowEditModal(true);
   };
 
-  const handleSaveAdmin = () => {
-    if (selectedAdmin) {
-      // Edit existing admin
-      setAdmins(admins.map(a => 
-        a.id === selectedAdmin.id 
-          ? { ...a, ...formData, avatar: formData.name.split(' ').map(n => n[0]).join('').toUpperCase() }
-          : a
-      ));
-      setShowEditModal(false);
-    } else {
-      // Create new admin
-      const newAdmin: AdminUser = {
-        id: `${Date.now()}`,
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        role: formData.role,
-        status: 'active',
-        avatar: formData.name.split(' ').map(n => n[0]).join('').toUpperCase(),
-        createdDate: new Date().toISOString().split('T')[0],
-        lastLogin: 'Never',
-        permissions: formData.role === 'super-admin' ? ['all'] : ['shipments']
-      };
-      setAdmins([...admins, newAdmin]);
-      setShowCreateModal(false);
+  const handleSaveAdmin = async () => {
+    setError('');
+
+    // Validation
+    if (!formData.name || !formData.email) {
+      setError('Name and Email are required.');
+      return;
+    }
+
+    if (!showEditModal) {
+      if (!formData.password) {
+        setError('Password is required for new users.');
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match.');
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (selectedAdmin) {
+        // Edit existing admin
+        const updateData: Partial<adminService.AdminUser> = {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          role: formData.role
+        };
+
+        const result = await adminService.updateAdmin(selectedAdmin.id, updateData);
+        if (result.success) {
+          if (onRefresh) onRefresh();
+          setShowEditModal(false);
+        } else {
+          setError('Failed to update admin.');
+        }
+      } else {
+        // Create new admin
+        const result = await adminService.createAdmin({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          role: formData.role,
+          password: formData.password
+        });
+
+        if (result.success) {
+          if (onRefresh) onRefresh();
+          setShowCreateModal(false);
+        } else {
+          setError(result.message || 'Failed to create admin.');
+        }
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDeleteAdmin = (id: string) => {
+  const handleDeleteAdmin = async (id: string) => {
     const admin = admins.find(a => a.id === id);
     if (admin?.role === 'super-admin') {
       alert('Cannot delete super admin accounts');
       return;
     }
     if (window.confirm('Are you sure you want to delete this admin user?')) {
-      setAdmins(admins.filter(a => a.id !== id));
+      try {
+        const result = await adminService.deleteAdmin(id);
+        if (result.success) {
+          if (onRefresh) onRefresh();
+        } else {
+          alert('Failed to delete admin: ' + result.message);
+        }
+      } catch (err) {
+        alert('Error deleting admin');
+      }
     }
   };
 
-  const handleToggleStatus = (id: string) => {
-    setAdmins(admins.map(a =>
-      a.id === id
-        ? { ...a, status: a.status === 'active' ? 'inactive' : 'active' as AdminUser['status'] }
-        : a
-    ));
+  const handleToggleStatus = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    try {
+      const result = await adminService.updateAdmin(id, { status: newStatus as any });
+      if (result.success) {
+        if (onRefresh) onRefresh();
+      }
+    } catch (err) {
+      console.error('Failed to toggle status', err);
+    }
   };
 
   const getRoleIcon = (role: string) => {
@@ -389,98 +356,98 @@ export function AdminManagement() {
 
       {/* Admins Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredAdmins.map((admin, index) => {
-          const RoleIcon = getRoleIcon(admin.role);
-          return (
-            <motion.div
-              key={admin.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="bg-white p-6 rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm hover:shadow-lg transition-all"
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 bg-gradient-to-br from-[#003893] to-[#002a6b] rounded-full flex items-center justify-center text-white font-bold text-lg">
-                    {admin.avatar}
+        {filteredAdmins.length > 0 ? (
+          filteredAdmins.map((admin, index) => {
+            const RoleIcon = getRoleIcon(admin.role);
+            return (
+              <motion.div
+                key={admin.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="bg-white p-6 rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm hover:shadow-lg transition-all"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#003893] to-[#002a6b] rounded-full flex items-center justify-center text-white font-bold text-lg">
+                      {admin.avatar || 'U'}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-[#1A1A1B]">{admin.name}</h3>
+                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${roleColors[admin.role]}`}>
+                        {admin.role.replace('-', ' ').toUpperCase()}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-bold text-[#1A1A1B]">{admin.name}</h3>
-                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${roleColors[admin.role]}`}>
-                      {admin.role.replace('-', ' ').toUpperCase()}
-                    </span>
+                  <RoleIcon className="text-[#FFD700]" size={24} />
+                </div>
+
+                {/* Info */}
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-[#1A1A1B]/70">
+                    <Mail size={16} className="text-[#003893]" />
+                    <span className="truncate">{admin.email}</span>
+                  </div>
+                  {admin.phone && (
+                    <div className="flex items-center gap-2 text-sm text-[#1A1A1B]/70">
+                      <Phone size={16} className="text-[#003893]" />
+                      <span>{admin.phone}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-sm text-[#1A1A1B]/70">
+                    <Calendar size={16} className="text-[#003893]" />
+                    <span>Last login: {admin.lastLogin}</span>
                   </div>
                 </div>
-                <RoleIcon className="text-[#FFD700]" size={24} />
-              </div>
 
-              {/* Info */}
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2 text-sm text-[#1A1A1B]/70">
-                  <Mail size={16} className="text-[#003893]" />
-                  <span className="truncate">{admin.email}</span>
+                {/* Status Badge */}
+                <div className="mb-4">
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border-2 ${statusColors[admin.status]}`}>
+                    {admin.status.toUpperCase()}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-[#1A1A1B]/70">
-                  <Phone size={16} className="text-[#003893]" />
-                  <span>{admin.phone}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-[#1A1A1B]/70">
-                  <Calendar size={16} className="text-[#003893]" />
-                  <span>Last login: {admin.lastLogin}</span>
-                </div>
-              </div>
 
-              {/* Status Badge */}
-              <div className="mb-4">
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold border-2 ${statusColors[admin.status]}`}>
-                  {admin.status.toUpperCase()}
-                </span>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2 pt-4 border-t border-[#1A1A1B]/10">
-                <button
-                  onClick={() => handleEditAdmin(admin)}
-                  className="flex-1 px-3 py-2 bg-[#003893] hover:bg-[#002a6b] text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-semibold"
-                >
-                  <Edit size={16} />
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleToggleStatus(admin.id)}
-                  className={`flex-1 px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-semibold ${
-                    admin.status === 'active'
-                      ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                      : 'bg-green-100 text-green-700 hover:bg-green-200'
-                  }`}
-                  disabled={admin.role === 'super-admin'}
-                >
-                  {admin.status === 'active' ? <Lock size={16} /> : <Unlock size={16} />}
-                  {admin.status === 'active' ? 'Suspend' : 'Activate'}
-                </button>
-                {admin.role !== 'super-admin' && (
+                {/* Actions */}
+                <div className="flex gap-2 pt-4 border-t border-[#1A1A1B]/10">
                   <button
-                    onClick={() => handleDeleteAdmin(admin.id)}
-                    className="px-3 py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors"
+                    onClick={() => handleEditAdmin(admin)}
+                    className="flex-1 px-3 py-2 bg-[#003893] hover:bg-[#002a6b] text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-semibold"
                   >
-                    <Trash2 size={16} />
+                    <Edit size={16} />
+                    Edit
                   </button>
-                )}
-              </div>
-            </motion.div>
-          );
-        })}
+                  <button
+                    onClick={() => handleToggleStatus(admin.id, admin.status)}
+                    className={`flex-1 px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-semibold ${admin.status === 'active'
+                        ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                        : 'bg-green-100 text-green-700 hover:bg-green-200'
+                      }`}
+                    disabled={admin.role === 'super-admin'}
+                  >
+                    {admin.status === 'active' ? <Lock size={16} /> : <Unlock size={16} />}
+                    {admin.status === 'active' ? 'Suspend' : 'Activate'}
+                  </button>
+                  {admin.role !== 'super-admin' && (
+                    <button
+                      onClick={() => handleDeleteAdmin(admin.id)}
+                      className="px-3 py-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })
+        ) : (
+          <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-white rounded-xl border-2 border-[#1A1A1B]/10 p-12 text-center">
+            <Users className="mx-auto text-[#1A1A1B]/20 mb-4" size={64} />
+            <h3 className="text-xl font-bold text-[#1A1A1B] mb-2">No admins found</h3>
+            <p className="text-[#1A1A1B]/60">Try adjusting your filters or create a new admin</p>
+          </div>
+        )}
       </div>
-
-      {/* Empty State */}
-      {filteredAdmins.length === 0 && (
-        <div className="bg-white rounded-xl border-2 border-[#1A1A1B]/10 p-12 text-center">
-          <Users className="mx-auto text-[#1A1A1B]/20 mb-4" size={64} />
-          <h3 className="text-xl font-bold text-[#1A1A1B] mb-2">No admins found</h3>
-          <p className="text-[#1A1A1B]/60">Try adjusting your filters or create a new admin</p>
-        </div>
-      )}
 
       {/* Create/Edit Modal */}
       <AnimatePresence>
@@ -508,6 +475,12 @@ export function AdminManagement() {
               </div>
 
               <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+                {error && (
+                  <div className="p-3 bg-red-50 text-red-700 text-sm rounded-lg">
+                    {error}
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-sm font-semibold text-[#1A1A1B] mb-2">
                     Full Name
@@ -553,7 +526,7 @@ export function AdminManagement() {
                   </label>
                   <select
                     value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value as AdminUser['role'] })}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value as adminService.AdminUser['role'] })}
                     className="w-full px-4 py-2 border-2 border-[#1A1A1B]/20 rounded-lg focus:outline-none focus:border-[#003893]"
                   >
                     <option value="staff">Staff</option>
@@ -610,14 +583,16 @@ export function AdminManagement() {
                     setShowEditModal(false);
                   }}
                   className="flex-1 px-4 py-2 border-2 border-[#1A1A1B]/20 text-[#1A1A1B] hover:bg-[#F5F7F8] rounded-lg transition-colors font-semibold"
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveAdmin}
                   className="flex-1 px-4 py-2 bg-[#003893] hover:bg-[#002a6b] text-white rounded-lg transition-colors flex items-center justify-center gap-2 font-semibold"
+                  disabled={isSubmitting}
                 >
-                  <Save size={18} />
+                  {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                   {showEditModal ? 'Update' : 'Create'}
                 </button>
               </div>

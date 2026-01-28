@@ -1,13 +1,14 @@
+const path = require('path');
+require('dotenv').config();
 const express = require('express');
 const https = require('https');
 const fs = require('fs');
-const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const multer = require('multer');
 const { storageAdapter } = require('./data/storageConfig');
-require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 443;
@@ -37,7 +38,7 @@ const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     const allowedOrigins = [
       process.env.CORS_ORIGIN,
       'http://46.224.19.81:5173',
@@ -45,16 +46,19 @@ const corsOptions = {
       'https://cargocapital.com',
       'https://46.224.19.81:5173',
       'http://localhost:5173',
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://localhost:5000',
       'http://localhost:4173',
       'http://127.0.0.1:5173',
       'http://127.0.0.1:4173'
     ].filter(Boolean);
-    
+
     // Add multiple domains if specified
     if (process.env.CORS_ORIGINS) {
       allowedOrigins.push(...process.env.CORS_ORIGINS.split(','));
     }
-    
+
     // In development, allow any origin from the same network for convenience
     if (process.env.NODE_ENV !== 'production') {
       // Allow any localhost/127.0.0.1 with any port
@@ -62,12 +66,12 @@ const corsOptions = {
         return callback(null, true);
       }
     }
-    
+
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       console.log(`CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error(`Not allowed by CORS: ${origin}`));
     }
   },
   credentials: true,
@@ -79,11 +83,47 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+
+// Serve static files from uploads directory with CORS
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
+
+// Configure Multer for image uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'blog-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images are allowed'));
+    }
+  }
+});
+
 // Initialize storage system
 async function initializeApp() {
   await storageAdapter.init();
   console.log('✅ Storage system initialized');
-  
+
   // Get storage stats
   try {
     const stats = await storageAdapter.getStats();
@@ -104,21 +144,45 @@ const trackingRoutes = require('./routes/tracking');
 const shipmentRoutes = require('./routes/shipments');
 const adminRoutes = require('./routes/admin');
 const emailRoutes = require('./routes/email');
+const blogRoutes = require('./routes/blogs');
 
 // Routes
 app.use('/api', trackingRoutes);
 app.use('/api', shipmentRoutes);
 app.use('/api', adminRoutes);
 app.use('/api', emailRoutes);
+app.use('/api/blogs', blogRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
-    message: 'Capital Cargo API is running',
+    message: 'Pan Pacific API is running',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
   });
+});
+
+// Image upload endpoint
+app.post('/api/blogs/upload', upload.single('image'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    // Construct the URL to the uploaded image
+    const imageUrl = `/uploads/${req.file.filename}`;
+
+    res.json({
+      success: true,
+      message: 'Image uploaded successfully',
+      data: {
+        imageUrl: imageUrl
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 // Storage stats endpoint
@@ -160,11 +224,11 @@ app.use('*', (req, res) => {
 function startHttpRedirect() {
   const http = require('http');
   const redirectApp = express();
-  
+
   redirectApp.use('*', (req, res) => {
     res.redirect(301, `https://${req.headers.host}${req.url}`);
   });
-  
+
   http.createServer(redirectApp).listen(HTTP_PORT, '0.0.0.0', () => {
     console.log(`🔀 HTTP redirect server running on port ${HTTP_PORT} (redirects to HTTPS)`);
   });
@@ -174,18 +238,18 @@ function startHttpRedirect() {
 async function startServer() {
   try {
     await initializeApp();
-    
+
     // Check if SSL certificates exist
     const sslKeyExists = fs.existsSync(SSL_KEY_PATH);
     const sslCertExists = fs.existsSync(SSL_CERT_PATH);
-    
+
     if (sslKeyExists && sslCertExists) {
       // HTTPS Server with SSL
       const sslOptions = {
         key: fs.readFileSync(SSL_KEY_PATH),
         cert: fs.readFileSync(SSL_CERT_PATH)
       };
-      
+
       https.createServer(sslOptions, app).listen(PORT, '0.0.0.0', () => {
         console.log(`🔒 Capital Cargo API server is running on HTTPS port ${PORT}`);
         console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -195,10 +259,10 @@ async function startServer() {
         console.log(`📱 Local HTTPS: https://localhost:${PORT}`);
         console.log(`✅ SSL/TLS enabled with Let's Encrypt certificates`);
       });
-      
+
       // Start HTTP redirect server
       startHttpRedirect();
-      
+
     } else {
       // Fallback to HTTP if SSL certificates not found
       console.warn('⚠️  SSL certificates not found at:');
@@ -206,7 +270,7 @@ async function startServer() {
       console.warn(`   Cert: ${SSL_CERT_PATH}`);
       console.warn('⚠️  Starting in HTTP mode (not recommended for production)');
       console.warn('💡 To enable HTTPS, run: sudo certbot certonly --standalone -d cargocapital.com');
-      
+
       app.listen(PORT, '0.0.0.0', () => {
         console.log(`Capital Cargo API server is running on HTTP port ${PORT}`);
         console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);

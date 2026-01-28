@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Package, Loader2, AlertCircle } from 'lucide-react';
@@ -6,8 +6,11 @@ import { AdminNav } from './AdminNav';
 import { AdminDashboard } from './AdminDashboard';
 import { OrderManagement } from './OrderManagement';
 import { DataTools } from './DataTools';
+import { BlogManagement } from './BlogManagement';
 import { AdminManagement } from './AdminManagement';
-import { Footer } from '../Footer';
+import * as authService from '../../services/auth';
+import * as shipmentsService from '../../services/shipments';
+import * as adminService from '../../services/admin';
 
 interface AdminUser {
   name: string;
@@ -21,9 +24,10 @@ interface Shipment {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  customerAddress: string;
   origin: string;
   destination: string;
-  status: 'pending' | 'in-transit' | 'customs' | 'out-for-delivery' | 'delivered' | 'cancelled';
+  status: 'pending' | 'in-transit' | 'customs' | 'out-for-delivery' | 'delivered' | 'cancelled' | 'processing' | 'picked-up';
   serviceType: 'air-freight' | 'sea-freight' | 'land-transport' | 'door-to-door';
   packageDetails: string;
   weight: string;
@@ -40,135 +44,82 @@ interface Shipment {
   }>;
 }
 
-// Mock shipments data
-const mockShipments: Shipment[] = [
-  {
-    id: '1',
-    trackingId: 'PPS2024001',
-    customerName: 'Rajesh Kumar',
-    customerEmail: 'rajesh@example.com',
-    customerPhone: '+977 9841234567',
-    origin: 'Kathmandu, Nepal',
-    destination: 'Dubai, UAE',
-    status: 'in-transit',
-    serviceType: 'air-freight',
-    packageDetails: 'Electronics - 5 boxes',
-    weight: '125 kg',
-    dimensions: '100x80x60 cm',
-    specialInstructions: 'Handle with care - fragile items',
-    createdDate: '2024-01-10',
-    lastUpdated: '2024-01-14',
-    estimatedDelivery: '2024-01-17',
-    events: [
-      { date: '2024-01-14 10:30', status: 'In Transit', location: 'Dubai Airport', description: 'Arrived at destination hub' },
-      { date: '2024-01-12 15:20', status: 'In Transit', location: 'Tribhuvan Airport', description: 'Departed origin' },
-      { date: '2024-01-10 09:00', status: 'Processing', location: 'Kathmandu Office', description: 'Shipment received' }
-    ]
-  },
-  {
-    id: '2',
-    trackingId: 'PPS2024002',
-    customerName: 'Sarah Johnson',
-    customerEmail: 'sarah.j@example.com',
-    customerPhone: '+1 555-0123',
-    origin: 'Los Angeles, USA',
-    destination: 'Kathmandu, Nepal',
-    status: 'customs',
-    serviceType: 'sea-freight',
-    packageDetails: 'Machinery parts - 1 container',
-    weight: '15000 kg',
-    dimensions: '20ft container',
-    createdDate: '2023-12-15',
-    lastUpdated: '2024-01-13',
-    estimatedDelivery: '2024-01-20',
-    events: [
-      { date: '2024-01-13 14:00', status: 'Customs Clearance', location: 'Kathmandu Customs', description: 'Under customs inspection' },
-      { date: '2024-01-08 08:30', status: 'In Transit', location: 'Kolkata Port', description: 'Arrived at transit port' },
-      { date: '2023-12-20 10:00', status: 'In Transit', location: 'LA Port', description: 'Container loaded' }
-    ]
-  },
-  {
-    id: '3',
-    trackingId: 'PPS2024003',
-    customerName: 'Pemba Sherpa',
-    customerEmail: 'pemba@example.com',
-    customerPhone: '+977 9851234567',
-    origin: 'Kathmandu, Nepal',
-    destination: 'Sydney, Australia',
-    status: 'delivered',
-    serviceType: 'air-freight',
-    packageDetails: 'Handicrafts - 3 boxes',
-    weight: '45 kg',
-    dimensions: '60x40x40 cm',
-    createdDate: '2024-01-05',
-    lastUpdated: '2024-01-12',
-    estimatedDelivery: '2024-01-12',
-    events: [
-      { date: '2024-01-12 11:00', status: 'Delivered', location: 'Sydney', description: 'Package delivered successfully' },
-      { date: '2024-01-11 09:30', status: 'Out for Delivery', location: 'Sydney Hub', description: 'Out for final delivery' },
-      { date: '2024-01-08 16:00', status: 'In Transit', location: 'Sydney Airport', description: 'Cleared customs' }
-    ]
-  },
-  {
-    id: '4',
-    trackingId: 'PPS2024004',
-    customerName: 'Mohammed Al-Rashid',
-    customerEmail: 'm.rashid@example.com',
-    customerPhone: '+971 50 123 4567',
-    origin: 'Dubai, UAE',
-    destination: 'Kathmandu, Nepal',
-    status: 'out-for-delivery',
-    serviceType: 'door-to-door',
-    packageDetails: 'Documents and samples',
-    weight: '2 kg',
-    dimensions: '30x25x10 cm',
-    createdDate: '2024-01-13',
-    lastUpdated: '2024-01-15',
-    estimatedDelivery: '2024-01-15',
-    events: [
-      { date: '2024-01-15 08:00', status: 'Out for Delivery', location: 'Kathmandu', description: 'Assigned to delivery driver' },
-      { date: '2024-01-14 20:00', status: 'Arrived', location: 'Kathmandu Office', description: 'Ready for delivery' },
-      { date: '2024-01-14 02:00', status: 'In Transit', location: 'Tribhuvan Airport', description: 'Arrived at destination' }
-    ]
-  },
-  {
-    id: '5',
-    trackingId: 'PPS2024005',
-    customerName: 'Lisa Chen',
-    customerEmail: 'lisa.chen@example.com',
-    customerPhone: '+86 138 0000 1234',
-    origin: 'Shanghai, China',
-    destination: 'Kathmandu, Nepal',
-    status: 'pending',
-    serviceType: 'sea-freight',
-    packageDetails: 'Textile materials - 2 pallets',
-    weight: '800 kg',
-    dimensions: '120x100x180 cm',
-    createdDate: '2024-01-14',
-    lastUpdated: '2024-01-14',
-    estimatedDelivery: '2024-02-05',
-    events: [
-      { date: '2024-01-14 11:00', status: 'Processing', location: 'Shanghai', description: 'Booking confirmed, awaiting pickup' }
-    ]
-  }
-];
-
 export function UnifiedAdminPanel() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [loginError, setLoginError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [isLoadingShipments, setIsLoadingShipments] = useState(false);
 
-  const [shipments, setShipments] = useState<Shipment[]>(mockShipments);
-
-  const adminUser: AdminUser = {
+  const [adminUser, setAdminUser] = useState<AdminUser>({
     name: 'Admin User',
-    email: 'admin@pslnepal.com',
+    email: 'admin@panpacific.com',
     avatar: 'AU'
+  });
+
+  // Check if user is already authenticated on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const result = await authService.verifyToken();
+      if (result.success && result.admin) {
+        setIsAuthenticated(true);
+        setAdminUser({
+          name: result.admin.name,
+          email: result.admin.email,
+          avatar: result.admin.name.split(' ').map(n => n[0]).join('').toUpperCase()
+        });
+      }
+      setIsCheckingAuth(false);
+    };
+    checkAuth();
+  }, []);
+
+
+
+  const fetchShipments = async () => {
+    setIsLoadingShipments(true);
+    try {
+      const result = await shipmentsService.getAllShipments(1, 100);
+      if (result.success && result.data) {
+        // result.data is the array of shipments from the backend
+        const shipmentsArray = Array.isArray(result.data) ? result.data : (result.data as any).shipments || [];
+        const mappedShipments = shipmentsArray.map(
+          shipmentsService.mapShipmentToFrontend
+        ) as Shipment[];
+        setShipments(mappedShipments);
+      }
+    } catch (error) {
+      console.error('Failed to fetch shipments:', error);
+    } finally {
+      setIsLoadingShipments(false);
+    }
   };
+
+  const [admins, setAdmins] = useState<adminService.AdminUser[]>([]);
+
+  const fetchAdmins = async () => {
+    try {
+      const result = await adminService.getAllAdmins();
+      if (result.success && result.data) {
+        setAdmins(result.data.map(adminService.mapAdminToFrontend));
+      }
+    } catch (error) {
+      console.error('Failed to fetch admins:', error);
+    }
+  };
+
+  // Fetch data when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchShipments();
+      fetchAdmins();
+    }
+  }, [isAuthenticated]);
 
   // Login handler
   const handleLogin = async (e: React.FormEvent) => {
@@ -176,25 +127,57 @@ export function UnifiedAdminPanel() {
     setLoginError('');
     setIsLoggingIn(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      if (email === 'admin@pslnepal.com' && password === 'admin123') {
+    try {
+      const result = await authService.login(email, password);
+
+      if (result.success && result.data) {
         setIsAuthenticated(true);
+        setAdminUser({
+          name: result.data.admin.name,
+          email: result.data.admin.email,
+          avatar: result.data.admin.name.split(' ').map(n => n[0]).join('').toUpperCase()
+        });
         setLoginError('');
       } else {
-        setLoginError('Invalid email or password');
+        setLoginError(result.message || 'Invalid email or password');
       }
+    } catch (error) {
+      setLoginError('Network error. Please check if the server is running.');
+    } finally {
       setIsLoggingIn(false);
-    }, 1000);
+    }
   };
 
   // Logout handler
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authService.logout();
     setIsAuthenticated(false);
     setEmail('');
     setPassword('');
+    setShipments([]);
     setIsMobileMenuOpen(false);
   };
+
+  // Handle shipment updates from child components
+  const handleUpdateShipments = (newShipments: Shipment[]) => {
+    setShipments(newShipments);
+  };
+
+  const handleUpdateAdmins = (newAdmins: adminService.AdminUser[]) => {
+    setAdmins(newAdmins);
+  };
+
+  // Show loading while checking auth
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#003893] to-[#002a6b] flex items-center justify-center">
+        <div className="text-white flex items-center gap-3">
+          <Loader2 className="animate-spin" size={32} />
+          <span className="text-xl">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   // Login Screen
   if (!isAuthenticated) {
@@ -236,7 +219,7 @@ export function UnifiedAdminPanel() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-3 border-2 border-[#1A1A1B]/20 rounded-lg focus:outline-none focus:border-[#003893]"
-                  placeholder="admin@pslnepal.com"
+                  placeholder="admin@panpacific.com"
                   required
                 />
               </div>
@@ -289,7 +272,7 @@ export function UnifiedAdminPanel() {
 
             <div className="mt-6 pt-6 border-t border-[#1A1A1B]/10">
               <p className="text-xs text-center text-[#1A1A1B]/40">
-                Demo credentials: admin@pslnepal.com / admin123
+                Default: admin@panpacific.com / capitalcargo123$
               </p>
             </div>
           </motion.div>
@@ -311,40 +294,56 @@ export function UnifiedAdminPanel() {
 
         <div className="lg:ml-64 pt-6">
           <div className="max-w-[1800px] mx-auto px-6 py-8">
-            <Routes>
-              <Route 
-                path="/" 
-                element={<AdminDashboard shipments={shipments} />} 
-              />
-              <Route 
-                path="/orders" 
-                element={
-                  <OrderManagement 
-                    shipments={shipments} 
-                    onUpdateShipments={setShipments} 
-                  />
-                } 
-              />
-              <Route 
-                path="/data-tools" 
-                element={
-                  <DataTools 
-                    shipments={shipments} 
-                    onUpdateShipments={setShipments} 
-                  />
-                } 
-              />
-              <Route 
-                path="/users" 
-                element={<AdminManagement />} 
-              />
-              <Route path="*" element={<Navigate to="/admin" replace />} />
-            </Routes>
+            {isLoadingShipments ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="animate-spin text-[#003893]" size={48} />
+              </div>
+            ) : (
+              <Routes>
+                <Route
+                  path="/"
+                  element={<AdminDashboard shipments={shipments} />}
+                />
+                <Route
+                  path="/orders"
+                  element={
+                    <OrderManagement
+                      shipments={shipments}
+                      onUpdateShipments={handleUpdateShipments}
+                      onRefresh={fetchShipments}
+                    />
+                  }
+                />
+                <Route
+                  path="/data-tools"
+                  element={
+                    <DataTools
+                      shipments={shipments}
+                      onUpdateShipments={handleUpdateShipments}
+                    />
+                  }
+                />
+                <Route
+                  path="/blogs"
+                  element={<BlogManagement />}
+                />
+                <Route
+                  path="/users"
+                  element={
+                    <AdminManagement
+                      admins={admins}
+                      onUpdateAdmins={handleUpdateAdmins}
+                      onRefresh={fetchAdmins}
+                    />
+                  }
+                />
+                <Route path="*" element={<Navigate to="/admin" replace />} />
+              </Routes>
+            )}
           </div>
         </div>
       </div>
 
-      <Footer />
     </>
   );
 }

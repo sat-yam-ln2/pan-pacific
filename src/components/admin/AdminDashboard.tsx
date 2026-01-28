@@ -34,13 +34,13 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
   // Statistics
   const stats = useMemo(() => {
     const total = shipments.length;
-    const active = shipments.filter(s => ['in-transit', 'customs', 'out-for-delivery'].includes(s.status)).length;
-    const delivered = shipments.filter(s => s.status === 'delivered' && 
+    const active = shipments.filter(s => ['in-transit', 'picked-up', 'out-for-delivery'].includes(s.status)).length;
+    const delivered = shipments.filter(s => s.status === 'delivered' &&
       new Date(s.lastUpdated).getMonth() === new Date().getMonth()).length;
-    const pending = shipments.filter(s => s.status === 'pending').length;
-    
+    const pending = shipments.filter(s => s.status === 'processing').length;
+
     // Calculate revenue (mock calculation)
-    const revenue = shipments.filter(s => 
+    const revenue = shipments.filter(s =>
       new Date(s.lastUpdated).getMonth() === new Date().getMonth()
     ).length * 1250; // Average $1250 per shipment
 
@@ -49,13 +49,38 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
 
   // Monthly shipments chart data
   const monthlyData = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    return months.map((month, index) => ({
-      name: month,
-      shipments: Math.floor(Math.random() * 50) + 20,
-      delivered: Math.floor(Math.random() * 40) + 15,
-    }));
-  }, []);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonth = new Date().getMonth();
+    // Show last 6 months
+    const displayedMonths = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(currentMonth - i);
+      displayedMonths.push({
+        name: months[d.getMonth()],
+        monthIndex: d.getMonth(),
+        year: d.getFullYear(),
+        shipments: 0,
+        delivered: 0
+      });
+    }
+
+    shipments.forEach(s => {
+      const date = new Date(s.createdDate);
+      const monthIndex = date.getMonth();
+      const year = date.getFullYear();
+
+      const monthData = displayedMonths.find(m => m.monthIndex === monthIndex && m.year === year);
+      if (monthData) {
+        monthData.shipments++;
+        if (s.status === 'delivered') {
+          monthData.delivered++;
+        }
+      }
+    });
+
+    return displayedMonths;
+  }, [shipments]);
 
   // Service type distribution
   const serviceData = useMemo(() => {
@@ -97,9 +122,9 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
   }, [shipments]);
 
   const statusIcons: Record<string, any> = {
-    'pending': Clock,
+    'processing': Clock,
     'in-transit': Truck,
-    'customs': Package,
+    'picked-up': Package,
     'out-for-delivery': MapPin,
     'delivered': CheckCircle,
   };
@@ -212,12 +237,12 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
             <AreaChart data={monthlyData}>
               <defs>
                 <linearGradient id="colorShipments" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#003893" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#003893" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#003893" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#003893" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="colorDelivered" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#DC143C" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#DC143C" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#DC143C" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#DC143C" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#1A1A1B20" />
@@ -225,20 +250,20 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
               <YAxis stroke="#1A1A1B" />
               <Tooltip />
               <Legend />
-              <Area 
-                type="monotone" 
-                dataKey="shipments" 
-                stroke="#003893" 
-                fillOpacity={1} 
-                fill="url(#colorShipments)" 
+              <Area
+                type="monotone"
+                dataKey="shipments"
+                stroke="#003893"
+                fillOpacity={1}
+                fill="url(#colorShipments)"
                 name="Total Shipments"
               />
-              <Area 
-                type="monotone" 
-                dataKey="delivered" 
-                stroke="#DC143C" 
-                fillOpacity={1} 
-                fill="url(#colorDelivered)" 
+              <Area
+                type="monotone"
+                dataKey="delivered"
+                stroke="#DC143C"
+                fillOpacity={1}
+                fill="url(#colorDelivered)"
                 name="Delivered"
               />
             </AreaChart>
@@ -303,7 +328,7 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
                     <span className="text-sm text-[#1A1A1B]/60">{dest.value} shipments</span>
                   </div>
                   <div className="w-full bg-[#F5F7F8] rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-[#003893] to-[#002a6b] h-2 rounded-full"
                       style={{ width: `${(dest.value / topDestinations[0].value) * 100}%` }}
                     />

@@ -19,10 +19,14 @@ const AdminSchema = new mongoose.Schema({
     required: true,
     minlength: 6
   },
+  phone: {
+    type: String,
+    trim: true
+  },
   role: {
     type: String,
-    default: 'admin',
-    enum: ['admin']
+    default: 'staff',
+    enum: ['super-admin', 'admin', 'manager', 'staff']
   },
   isActive: {
     type: Boolean,
@@ -51,15 +55,15 @@ const AdminSchema = new mongoose.Schema({
 });
 
 // Virtual for account lock status
-AdminSchema.virtual('isLocked').get(function() {
+AdminSchema.virtual('isLocked').get(function () {
   return !!(this.lockUntil && this.lockUntil > Date.now());
 });
 
 // Pre-save middleware to hash password
-AdminSchema.pre('save', async function(next) {
+AdminSchema.pre('save', async function (next) {
   // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) return next();
-  
+
   try {
     // Generate salt and hash password
     const salt = await bcrypt.genSalt(12);
@@ -71,7 +75,7 @@ AdminSchema.pre('save', async function(next) {
 });
 
 // Method to compare password
-AdminSchema.methods.comparePassword = async function(candidatePassword) {
+AdminSchema.methods.comparePassword = async function (candidatePassword) {
   try {
     return await bcrypt.compare(candidatePassword, this.password);
   } catch (error) {
@@ -80,7 +84,7 @@ AdminSchema.methods.comparePassword = async function(candidatePassword) {
 };
 
 // Method to increment login attempts
-AdminSchema.methods.incLoginAttempts = function() {
+AdminSchema.methods.incLoginAttempts = function () {
   // If we have a previous lock that has expired, restart at 1
   if (this.lockUntil && this.lockUntil < Date.now()) {
     return this.updateOne({
@@ -88,26 +92,26 @@ AdminSchema.methods.incLoginAttempts = function() {
       $set: { loginAttempts: 1 }
     });
   }
-  
+
   const updates = { $inc: { loginAttempts: 1 } };
-  
+
   // If we've reached max attempts and it's not already locked, lock the account
   if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
     updates.$set = { lockUntil: Date.now() + 2 * 60 * 60 * 1000 }; // Lock for 2 hours
   }
-  
+
   return this.updateOne(updates);
 };
 
 // Method to reset login attempts
-AdminSchema.methods.resetLoginAttempts = function() {
+AdminSchema.methods.resetLoginAttempts = function () {
   return this.updateOne({
     $unset: { loginAttempts: 1, lockUntil: 1 }
   });
 };
 
 // Static method to find by email and not locked
-AdminSchema.statics.findByEmailAndNotLocked = function(email) {
+AdminSchema.statics.findByEmailAndNotLocked = function (email) {
   return this.findOne({
     email: email,
     isActive: true,
@@ -119,17 +123,17 @@ AdminSchema.statics.findByEmailAndNotLocked = function(email) {
 };
 
 // Static method to create default admin if none exists
-AdminSchema.statics.createDefaultAdmin = async function() {
+AdminSchema.statics.createDefaultAdmin = async function () {
   try {
     const adminExists = await this.findOne();
     if (!adminExists) {
       const defaultAdmin = new this({
         name: 'Admin User',
-        email: 'admin@cargocapital.com',
+        email: 'admin@panpacific.com',
         password: 'capitalcargo123$', // This will be hashed by the pre-save middleware
         role: 'admin'
       });
-      
+
       await defaultAdmin.save();
       console.log('✅ Default admin user created');
       console.log('📧 Email: admin@cargocapital.com');

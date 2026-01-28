@@ -1,13 +1,14 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Package, 
-  Database, 
-  Users, 
+import {
+  LayoutDashboard,
+  Package,
+  Database,
+  Users,
   LogOut,
   Menu,
-  X
+  X,
+  FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -25,6 +26,7 @@ interface AdminNavProps {
 const navLinks = [
   { path: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { path: '/admin/orders', icon: Package, label: 'Order Management' },
+  { path: '/admin/blogs', icon: FileText, label: 'Blog Management' },
   { path: '/admin/data-tools', icon: Database, label: 'Data Tools' },
   { path: '/admin/users', icon: Users, label: 'Admin Management' },
 ];
@@ -48,19 +50,19 @@ export function AdminNav({ adminUser, onLogout, isMobileMenuOpen, setIsMobileMen
               <p className="text-sm text-white/70">Pan Pacific Shipping & Logistics</p>
             </div>
           </div>
-          
+
           {/* Right: User Info & Logout */}
           <div className="flex items-center gap-6">
             <div className="text-right hidden md:block">
-              <p className="text-sm font-semibold">{new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+              <p className="text-sm font-semibold">{new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
               })}</p>
               <p className="text-xs text-white/70">{new Date().toLocaleTimeString()}</p>
             </div>
-            
+
             <div className="flex items-center gap-3 pl-6 border-l border-white/20">
               <div className="w-10 h-10 bg-[#FFD700] rounded-full flex items-center justify-center font-bold text-[#003893]">
                 {adminUser.avatar}
@@ -70,7 +72,7 @@ export function AdminNav({ adminUser, onLogout, isMobileMenuOpen, setIsMobileMen
                 <p className="text-xs text-white/70">{adminUser.email}</p>
               </div>
             </div>
-            
+
             <button
               onClick={onLogout}
               className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors flex items-center gap-2"
@@ -91,10 +93,9 @@ export function AdminNav({ adminUser, onLogout, isMobileMenuOpen, setIsMobileMen
               to={link.path}
               end={link.end}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  isActive
-                    ? 'bg-gradient-to-r from-[#003893] to-[#002a6b] text-white shadow-lg'
-                    : 'text-[#1A1A1B] hover:bg-[#F5F7F8]'
+                `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive
+                  ? 'bg-gradient-to-r from-[#003893] to-[#002a6b] text-white shadow-lg'
+                  : 'text-[#1A1A1B] hover:bg-[#F5F7F8]'
                 }`
               }
             >
@@ -130,7 +131,7 @@ export function AdminNav({ adminUser, onLogout, isMobileMenuOpen, setIsMobileMen
               onClick={() => setIsMobileMenuOpen(false)}
               className="lg:hidden fixed inset-0 bg-black/50 z-40 top-[72px]"
             />
-            
+
             {/* Menu */}
             <motion.aside
               initial={{ x: -280 }}
@@ -147,10 +148,9 @@ export function AdminNav({ adminUser, onLogout, isMobileMenuOpen, setIsMobileMen
                     end={link.end}
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                        isActive
-                          ? 'bg-gradient-to-r from-[#003893] to-[#002a6b] text-white shadow-lg'
-                          : 'text-[#1A1A1B] hover:bg-[#F5F7F8]'
+                      `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive
+                        ? 'bg-gradient-to-r from-[#003893] to-[#002a6b] text-white shadow-lg'
+                        : 'text-[#1A1A1B] hover:bg-[#F5F7F8]'
                       }`
                     }
                   >

@@ -8,6 +8,7 @@ import { Tracking } from './components/Tracking';
 import { Quote } from './components/Quote';
 import { FAQ } from './components/FAQ';
 import { Blog } from './components/Blog';
+import { BlogDetail } from './components/BlogDetail';
 import { Contact } from './components/Contact';
 import { AdminTracking } from './components/AdminTracking';
 import { UnifiedAdminPanel } from './components/admin/UnifiedAdminPanel';
@@ -69,6 +70,7 @@ function AppContent() {
           <Route path="/tracking" element={<Tracking />} />
           <Route path="/quote" element={<Quote />} />
           <Route path="/faq" element={<FAQ />} />
+          <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/admin-tracking" element={<AdminTracking />} />

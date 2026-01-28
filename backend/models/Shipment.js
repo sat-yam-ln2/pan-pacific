@@ -174,18 +174,17 @@ const ShipmentSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// Index for faster tracking ID lookups
-ShipmentSchema.index({ trackingId: 1 });
+// Index for faster tracking ID lookups (trackingId index is already created by unique: true)
 ShipmentSchema.index({ status: 1 });
 ShipmentSchema.index({ createdAt: -1 });
 
 // Virtual for tracking URL
-ShipmentSchema.virtual('trackingUrl').get(function() {
+ShipmentSchema.virtual('trackingUrl').get(function () {
   return `${process.env.FRONTEND_URL || 'http://localhost:5173'}/tracking?id=${this.trackingId}`;
 });
 
 // Method to add tracking event
-ShipmentSchema.methods.addTrackingEvent = function(status, description, location) {
+ShipmentSchema.methods.addTrackingEvent = function (status, description, location) {
   this.events.push({
     status,
     description,
@@ -193,25 +192,25 @@ ShipmentSchema.methods.addTrackingEvent = function(status, description, location
     timestamp: new Date(),
     completed: ['delivered', 'exception'].includes(status)
   });
-  
+
   this.status = status;
-  
+
   if (status === 'delivered' && !this.actualDelivery) {
     this.actualDelivery = new Date();
   }
-  
+
   return this.save();
 };
 
 // Method to generate tracking ID
-ShipmentSchema.statics.generateTrackingId = function() {
-  const prefix = 'CCIPL'; // Capital Cargo International Pvt. Ltd
+ShipmentSchema.statics.generateTrackingId = function () {
+  const prefix = 'PPS'; // Pan Pacific Shipping & Logistics
   const randomNumbers = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
   return `${prefix}${randomNumbers}`;
 };
 
 // Pre-save middleware to generate tracking ID if not provided
-ShipmentSchema.pre('save', function(next) {
+ShipmentSchema.pre('save', function (next) {
   if (!this.trackingId) {
     this.trackingId = this.constructor.generateTrackingId();
   }

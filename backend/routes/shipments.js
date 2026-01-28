@@ -3,6 +3,7 @@ const router = express.Router();
 
 // Get all shipments with pagination
 router.get('/shipments', async (req, res) => {
+  console.log(`📡 GET /api/shipments - Query: ${JSON.stringify(req.query)}`);
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -35,9 +36,9 @@ router.get('/shipments', async (req, res) => {
 router.get('/shipments/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Try to find by tracking ID (since we're using mock data, we'll use tracking ID as primary identifier)
-    const shipment = req.storage.findByTrackingId(id);
+    const shipment = await req.storage.findByTrackingId(id);
 
     if (!shipment) {
       return res.status(404).json({
@@ -64,10 +65,10 @@ router.get('/shipments/:id', async (req, res) => {
 router.post('/shipments', async (req, res) => {
   try {
     const shipmentData = req.body;
-    
+
     // Debug logging
     console.log('📦 Creating shipment with data:', JSON.stringify(shipmentData, null, 2));
-    
+
     // Validate required fields
     const requiredFields = ['customerInfo', 'shipmentDetails'];
     for (const field of requiredFields) {
@@ -98,8 +99,8 @@ router.post('/shipments', async (req, res) => {
     if (shipmentData.shipmentDetails) {
       const requiredShipmentFields = ['origin', 'destination', 'weight'];
       for (const field of requiredShipmentFields) {
-        if (!shipmentData.shipmentDetails[field] || 
-            (typeof shipmentData.shipmentDetails[field] === 'string' && shipmentData.shipmentDetails[field].trim() === '')) {
+        if (!shipmentData.shipmentDetails[field] ||
+          (typeof shipmentData.shipmentDetails[field] === 'string' && shipmentData.shipmentDetails[field].trim() === '')) {
           console.log(`❌ Missing shipmentDetails.${field}`);
           return res.status(400).json({
             success: false,
@@ -107,7 +108,7 @@ router.post('/shipments', async (req, res) => {
           });
         }
       }
-      
+
       // Provide defaults for optional fields
       if (!shipmentData.shipmentDetails.description || shipmentData.shipmentDetails.description.trim() === '') {
         shipmentData.shipmentDetails.description = 'General cargo';
@@ -186,7 +187,7 @@ router.post('/shipments', async (req, res) => {
   } catch (error) {
     console.error('❌ Create shipment error:', error);
     console.error('📋 Request body was:', JSON.stringify(req.body, null, 2));
-    
+
     res.status(500).json({
       success: false,
       message: 'Failed to create shipment',
@@ -200,27 +201,78 @@ router.put('/shipments/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
-    
-    const shipment = await req.storage.updateShipment(id, updateData);
 
-    if (!shipment) {
+    console.log(`📡 PUT /api/shipments/${id} - Update received`);
+
+    // Fetch current shipment to check for status change
+    const ShipmentModel = require('../models/Shipment');
+    const shipmentDoc = await ShipmentModel.findOne({
+      trackingId: id.toUpperCase()
+    });
+
+    if (!shipmentDoc) {
       return res.status(404).json({
         success: false,
         message: 'Shipment not found'
       });
     }
 
+    // Check if we should add a tracking event
+    const statusChanged = updateData.status && updateData.status !== shipmentDoc.status;
+    const lastEvent = shipmentDoc.events && shipmentDoc.events.length > 0
+      ? shipmentDoc.events[shipmentDoc.events.length - 1]
+      : null;
+
+    // Check if location or description is different from the last event
+    const locationChanged = updateData.currentLocation && (!lastEvent || updateData.currentLocation !== lastEvent.location);
+    const descChanged = updateData.statusDescription && (!lastEvent || updateData.statusDescription !== lastEvent.description);
+
+    if (statusChanged || locationChanged || descChanged) {
+      const newStatus = updateData.status || shipmentDoc.status;
+      const newLocation = updateData.currentLocation || (lastEvent ? lastEvent.location : 'Distribution Center');
+      const newDesc = updateData.statusDescription || `Shipment status updated to ${newStatus}`;
+
+      console.log(`📝 Adding tracking event: ${newStatus} at ${newLocation}`);
+      // Use the internal method which also sets this.status and might set actualDelivery
+      await shipmentDoc.addTrackingEvent(newStatus, newDesc, newLocation);
+    }
+
+    // Update other fields directly on the document
+    if (updateData.customerInfo) {
+      shipmentDoc.customerInfo = {
+        ...shipmentDoc.customerInfo.toObject(),
+        ...updateData.customerInfo
+      };
+    }
+    if (updateData.shipmentDetails) {
+      shipmentDoc.shipmentDetails = {
+        ...shipmentDoc.shipmentDetails.toObject(),
+        ...updateData.shipmentDetails
+      };
+    }
+    if (updateData.status) shipmentDoc.status = updateData.status;
+    if (updateData.estimatedDelivery) shipmentDoc.estimatedDelivery = updateData.estimatedDelivery;
+
+    // Save the document atomically
+    const savedDoc = await shipmentDoc.save();
+
     res.json({
       success: true,
-      data: shipment,
+      data: savedDoc,
       message: 'Shipment updated successfully'
     });
   } catch (error) {
-    console.error('Update shipment error:', error);
+    console.error('❌ Update shipment error:', error);
+    if (error.name === 'ValidationError') {
+      console.error('📋 Validation details:', JSON.stringify(error.errors, null, 2));
+    }
+    console.error('📋 Request body was:', JSON.stringify(req.body, null, 2));
+
     res.status(500).json({
       success: false,
       message: 'Failed to update shipment',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      validationErrors: error.name === 'ValidationError' ? error.errors : undefined
     });
   }
 });
@@ -230,7 +282,7 @@ router.put('/shipments/:id/status', async (req, res) => {
   try {
     const { id } = req.params;
     const { status, description, location } = req.body;
-    
+
     if (!status) {
       return res.status(400).json({
         success: false,
@@ -252,7 +304,7 @@ router.put('/shipments/:id/status', async (req, res) => {
 
     // First get the current shipment to access its data
     const currentShipment = await req.storage.findByTrackingId(id);
-    
+
     if (!currentShipment) {
       return res.status(404).json({
         success: false,
@@ -271,12 +323,12 @@ router.put('/shipments/:id/status', async (req, res) => {
 
     // Get existing events or initialize empty array
     const existingEvents = currentShipment.events || [];
-    
+
     // Add the new event to the events array
     const updatedEvents = [...existingEvents, newEvent];
 
     // Update the shipment with new status and event
-    const shipment = await req.storage.updateShipment(id, { 
+    const shipment = await req.storage.updateShipment(id, {
       status,
       events: updatedEvents,
       updatedAt: new Date().toISOString()
@@ -298,7 +350,7 @@ router.put('/shipments/:id/status', async (req, res) => {
     });
   } catch (error) {
     console.error('❌ Update shipment status error:', error);
-    
+
     res.status(500).json({
       success: false,
       message: 'Failed to update shipment status',
@@ -312,7 +364,7 @@ router.post('/shipments/:id/events', async (req, res) => {
   try {
     const { id } = req.params;
     const { status, description, location } = req.body;
-    
+
     if (!status || !description || !location) {
       return res.status(400).json({
         success: false,
@@ -340,7 +392,7 @@ router.post('/shipments/:id/events', async (req, res) => {
     };
 
     shipment.trackingEvents.push(newEvent);
-    
+
     // Update the shipment
     const updatedShipment = req.storage.updateShipment(id, {
       trackingEvents: shipment.trackingEvents,
@@ -367,7 +419,7 @@ router.post('/shipments/:id/events', async (req, res) => {
 router.delete('/shipments/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const success = req.storage.deleteShipment(id);
 
     if (!success) {
@@ -396,7 +448,7 @@ router.put('/shipments/:id/delivery-status', async (req, res) => {
   try {
     const { id } = req.params;
     const { deliveryStatus } = req.body;
-    
+
     // Predefined delivery status options (dropdown values)
     const validStatuses = [
       'processing',
@@ -408,14 +460,14 @@ router.put('/shipments/:id/delivery-status', async (req, res) => {
       'returned',
       'cancelled'
     ];
-    
+
     if (!deliveryStatus) {
       return res.status(400).json({
         success: false,
         message: 'Delivery status is required'
       });
     }
-    
+
     if (!validStatuses.includes(deliveryStatus)) {
       return res.status(400).json({
         success: false,
@@ -429,7 +481,7 @@ router.put('/shipments/:id/delivery-status', async (req, res) => {
       // Valid ObjectId format
       shipment = await Shipment.findByIdAndUpdate(
         id,
-        { 
+        {
           status: deliveryStatus,
           lastUpdated: new Date()
         },
@@ -439,7 +491,7 @@ router.put('/shipments/:id/delivery-status', async (req, res) => {
       // Assume it's a tracking ID
       shipment = await Shipment.findOneAndUpdate(
         { trackingId: id },
-        { 
+        {
           status: deliveryStatus,
           lastUpdated: new Date()
         },
@@ -492,14 +544,14 @@ router.put('/shipments/:id/estimated-delivery', async (req, res) => {
   try {
     const { id } = req.params;
     const { estimatedDelivery } = req.body;
-    
+
     if (!estimatedDelivery) {
       return res.status(400).json({
         success: false,
         message: 'Estimated delivery time is required'
       });
     }
-    
+
     // Validate date format
     const deliveryDate = new Date(estimatedDelivery);
     if (isNaN(deliveryDate.getTime())) {
@@ -508,7 +560,7 @@ router.put('/shipments/:id/estimated-delivery', async (req, res) => {
         message: 'Invalid date format. Please use ISO date format (YYYY-MM-DDTHH:mm:ss.sssZ)'
       });
     }
-    
+
     // Check if date is in the future
     if (deliveryDate <= new Date()) {
       return res.status(400).json({
@@ -523,7 +575,7 @@ router.put('/shipments/:id/estimated-delivery', async (req, res) => {
       // Valid ObjectId format
       shipment = await Shipment.findByIdAndUpdate(
         id,
-        { 
+        {
           estimatedDelivery: deliveryDate,
           lastUpdated: new Date()
         },
@@ -533,7 +585,7 @@ router.put('/shipments/:id/estimated-delivery', async (req, res) => {
       // Assume it's a tracking ID
       shipment = await Shipment.findOneAndUpdate(
         { trackingId: id },
-        { 
+        {
           estimatedDelivery: deliveryDate,
           lastUpdated: new Date()
         },
@@ -568,14 +620,14 @@ router.delete('/shipments/:id/confirm', async (req, res) => {
   try {
     const { id } = req.params;
     const { confirmDelete, reason } = req.body;
-    
+
     if (!confirmDelete || confirmDelete !== true) {
       return res.status(400).json({
         success: false,
         message: 'Delete confirmation required. Set confirmDelete: true'
       });
     }
-    
+
     if (!reason || reason.trim().length < 3) {
       return res.status(400).json({
         success: false,
@@ -666,45 +718,45 @@ router.get('/dropdown-options', (req, res) => {
       { value: 'cancelled', label: 'Cancelled', description: 'Shipment cancelled', color: '#dc2626', icon: '🚫' }
     ],
     serviceType: [
-      { 
-        value: 'standard', 
-        label: 'Standard Delivery', 
+      {
+        value: 'standard',
+        label: 'Standard Delivery',
         description: '5-7 business days',
         estimatedDays: 5,
         price: '$15.99',
         icon: '📮',
         popular: false
       },
-      { 
-        value: 'express', 
-        label: 'Express Delivery', 
+      {
+        value: 'express',
+        label: 'Express Delivery',
         description: '2-3 business days',
         estimatedDays: 2,
         price: '$29.99',
         icon: '⚡',
         popular: true
       },
-      { 
-        value: 'overnight', 
-        label: 'Overnight Delivery', 
+      {
+        value: 'overnight',
+        label: 'Overnight Delivery',
         description: 'Next business day',
         estimatedDays: 1,
         price: '$49.99',
         icon: '🌙',
         popular: false
       },
-      { 
-        value: 'international', 
-        label: 'International Shipping', 
+      {
+        value: 'international',
+        label: 'International Shipping',
         description: '7-14 business days',
         estimatedDays: 10,
         price: '$89.99',
         icon: '🌍',
         popular: false
       },
-      { 
-        value: 'freight', 
-        label: 'Freight Shipping', 
+      {
+        value: 'freight',
+        label: 'Freight Shipping',
         description: '5-10 business days for large items',
         estimatedDays: 7,
         price: '$199.99',
@@ -772,11 +824,11 @@ router.get('/dropdown-options', (req, res) => {
 router.post('/service-recommendations', (req, res) => {
   try {
     const { urgency, budget, destination, weight, packageType } = req.body;
-    
+
     const serviceOptions = [
-      { 
-        value: 'standard', 
-        label: 'Standard Delivery', 
+      {
+        value: 'standard',
+        label: 'Standard Delivery',
         estimatedDays: 5,
         price: 15.99,
         urgencyScore: 1,
@@ -784,9 +836,9 @@ router.post('/service-recommendations', (req, res) => {
         weightLimit: 70,
         international: false
       },
-      { 
-        value: 'express', 
-        label: 'Express Delivery', 
+      {
+        value: 'express',
+        label: 'Express Delivery',
         estimatedDays: 2,
         price: 29.99,
         urgencyScore: 4,
@@ -794,9 +846,9 @@ router.post('/service-recommendations', (req, res) => {
         weightLimit: 50,
         international: false
       },
-      { 
-        value: 'overnight', 
-        label: 'Overnight Delivery', 
+      {
+        value: 'overnight',
+        label: 'Overnight Delivery',
         estimatedDays: 1,
         price: 49.99,
         urgencyScore: 5,
@@ -804,9 +856,9 @@ router.post('/service-recommendations', (req, res) => {
         weightLimit: 30,
         international: false
       },
-      { 
-        value: 'international', 
-        label: 'International Shipping', 
+      {
+        value: 'international',
+        label: 'International Shipping',
         estimatedDays: 10,
         price: 89.99,
         urgencyScore: 2,
@@ -814,9 +866,9 @@ router.post('/service-recommendations', (req, res) => {
         weightLimit: 100,
         international: true
       },
-      { 
-        value: 'freight', 
-        label: 'Freight Shipping', 
+      {
+        value: 'freight',
+        label: 'Freight Shipping',
         estimatedDays: 7,
         price: 199.99,
         urgencyScore: 2,
@@ -829,7 +881,7 @@ router.post('/service-recommendations', (req, res) => {
     let recommendations = serviceOptions.map(service => {
       let score = 0;
       let reasons = [];
-      
+
       // Urgency scoring
       if (urgency === 'urgent' && service.urgencyScore >= 4) {
         score += 30;
@@ -838,7 +890,7 @@ router.post('/service-recommendations', (req, res) => {
         score += 20;
         reasons.push('Good for normal delivery timeline');
       }
-      
+
       // Budget scoring
       if (budget) {
         const budgetNum = parseFloat(budget.replace('$', ''));
@@ -850,7 +902,7 @@ router.post('/service-recommendations', (req, res) => {
           reasons.push('Over budget');
         }
       }
-      
+
       // Destination scoring
       const isInternational = destination && !['US', 'United States'].includes(destination);
       if (isInternational && service.international) {
@@ -860,7 +912,7 @@ router.post('/service-recommendations', (req, res) => {
         score += 15;
         reasons.push('Optimized for domestic delivery');
       }
-      
+
       // Weight scoring
       if (weight) {
         const weightNum = parseFloat(weight);
@@ -872,7 +924,7 @@ router.post('/service-recommendations', (req, res) => {
           reasons.push('Exceeds weight limit');
         }
       }
-      
+
       // Package type bonus
       if (packageType === 'envelope' && service.value === 'express') {
         score += 10;
@@ -881,7 +933,7 @@ router.post('/service-recommendations', (req, res) => {
         score += 15;
         reasons.push('Designed for freight shipments');
       }
-      
+
       return {
         ...service,
         recommendationScore: Math.max(0, score),
@@ -892,7 +944,7 @@ router.post('/service-recommendations', (req, res) => {
 
     // Sort by recommendation score
     recommendations.sort((a, b) => b.recommendationScore - a.recommendationScore);
-    
+
     // Add ranking
     recommendations = recommendations.map((rec, index) => ({
       ...rec,
@@ -925,7 +977,7 @@ router.get('/dropdown-options/:category', (req, res) => {
   try {
     const { category } = req.params;
     const { filter, region, priceRange } = req.query;
-    
+
     const allOptions = {
       status: [
         { value: 'processing', label: 'Processing', description: 'Order is being processed', color: '#f59e0b', icon: '⏳' },
@@ -970,7 +1022,7 @@ router.get('/dropdown-options/:category', (req, res) => {
 
     // Apply filters
     if (filter) {
-      options = options.filter(option => 
+      options = options.filter(option =>
         option.label.toLowerCase().includes(filter.toLowerCase()) ||
         option.value.toLowerCase().includes(filter.toLowerCase())
       );
@@ -1007,7 +1059,7 @@ router.get('/dropdown-options/:category', (req, res) => {
 router.post('/validate-address', (req, res) => {
   try {
     const { address } = req.body;
-    
+
     if (!address) {
       return res.status(400).json({
         success: false,
@@ -1045,7 +1097,7 @@ router.post('/validate-address', (req, res) => {
     }
 
     const isValid = errors.length === 0;
-    
+
     // Generate formatted address if valid
     let formattedAddress = null;
     if (isValid) {
@@ -1084,7 +1136,7 @@ router.post('/validate-address', (req, res) => {
 router.post('/validate-tracking-id', (req, res) => {
   try {
     const { trackingId } = req.body;
-    
+
     if (!trackingId) {
       return res.status(400).json({
         success: false,
@@ -1098,7 +1150,7 @@ router.post('/validate-tracking-id', (req, res) => {
 
     // Validate tracking ID format (should be like TRK-YYYYMMDD-XXXX)
     const trackingPattern = /^TRK-\d{8}-[A-Z0-9]{4}$/;
-    
+
     if (!trackingPattern.test(cleanTrackingId)) {
       errors.push('Invalid tracking ID format');
       suggestions.push('Tracking ID should be in format: TRK-YYYYMMDD-XXXX');
@@ -1109,7 +1161,7 @@ router.post('/validate-tracking-id', (req, res) => {
     // For now, we'll just validate format
 
     const isValid = errors.length === 0;
-    
+
     res.json({
       success: true,
       data: {
@@ -1135,10 +1187,10 @@ router.post('/validate-tracking-id', (req, res) => {
 router.get('/statistics', async (req, res) => {
   try {
     const { timeframe = '30d' } = req.query;
-    
+
     let dateFilter = {};
     const now = new Date();
-    
+
     switch (timeframe) {
       case '7d':
         dateFilter = { createdAt: { $gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) } };
@@ -1214,7 +1266,7 @@ router.get('/statistics', async (req, res) => {
 router.post('/bulk-update', async (req, res) => {
   try {
     const { operation, shipmentIds, updateData } = req.body;
-    
+
     if (!operation || !shipmentIds || !Array.isArray(shipmentIds)) {
       return res.status(400).json({
         success: false,
@@ -1244,22 +1296,22 @@ router.post('/bulk-update', async (req, res) => {
             message: 'Status is required for bulk status update'
           });
         }
-        
+
         for (const id of shipmentIds) {
           try {
-            const filter = mongoose.Types.ObjectId.isValid(id) 
-              ? { _id: id } 
+            const filter = mongoose.Types.ObjectId.isValid(id)
+              ? { _id: id }
               : { trackingId: id };
-            
+
             const updated = await Shipment.findOneAndUpdate(
               filter,
-              { 
+              {
                 status: updateData.status,
                 updatedAt: new Date()
               },
               { new: true }
             );
-            
+
             if (updated) {
               results.successful.push({ id, trackingId: updated.trackingId });
             } else {
@@ -1270,16 +1322,16 @@ router.post('/bulk-update', async (req, res) => {
           }
         }
         break;
-        
+
       case 'delete':
         for (const id of shipmentIds) {
           try {
-            const filter = mongoose.Types.ObjectId.isValid(id) 
-              ? { _id: id } 
+            const filter = mongoose.Types.ObjectId.isValid(id)
+              ? { _id: id }
               : { trackingId: id };
-            
+
             const deleted = await Shipment.findOneAndDelete(filter);
-            
+
             if (deleted) {
               results.successful.push({ id, trackingId: deleted.trackingId });
             } else {
@@ -1290,7 +1342,7 @@ router.post('/bulk-update', async (req, res) => {
           }
         }
         break;
-        
+
       default:
         return res.status(400).json({
           success: false,

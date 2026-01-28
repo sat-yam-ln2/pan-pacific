@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
+import {
   Search,
   Package,
   MapPin,
@@ -20,6 +20,8 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { Footer } from './Footer';
+import * as trackingService from '../services/tracking';
+import type { Shipment } from '../services/shipments';
 
 // Mock tracking data
 const mockTrackingData: { [key: string]: any } = {
@@ -231,23 +233,44 @@ export function Tracking() {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleTrack = () => {
+  const handleTrack = async () => {
     setIsLoading(true);
     setError(false);
     setTrackingData(null);
 
-    // Simulate API call
-    setTimeout(() => {
-      const data = mockTrackingData[trackingNumber.toUpperCase()];
-      if (data) {
-        setTrackingData(data);
+    try {
+      // Try real API first
+      const result = await trackingService.trackShipment(trackingNumber.toUpperCase());
+
+      if (result.success && result.data) {
+        // Map backend data to display format
+        const mappedData = trackingService.mapTrackingToDisplay(result.data);
+        setTrackingData(mappedData);
+        setError(false);
+      } else {
+        // Fallback to mock data for demo purposes
+        const mockData = mockTrackingData[trackingNumber.toUpperCase()];
+        if (mockData) {
+          setTrackingData(mockData);
+          setError(false);
+        } else {
+          setError(true);
+          setTrackingData(null);
+        }
+      }
+    } catch (err) {
+      // Fallback to mock data if API fails
+      const mockData = mockTrackingData[trackingNumber.toUpperCase()];
+      if (mockData) {
+        setTrackingData(mockData);
         setError(false);
       } else {
         setError(true);
         setTrackingData(null);
       }
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -273,13 +296,13 @@ export function Tracking() {
               </span>
               <div className="w-12 h-px bg-[#1A1A1B] opacity-20" />
             </div>
-            
+
             <h1 className="text-5xl lg:text-7xl text-[#1A1A1B] tracking-tight mb-6" style={{ fontWeight: 700 }}>
               Track Your
               <br />
               <span className="opacity-40">Shipment</span>
             </h1>
-            
+
             <p className="text-lg text-[#1A1A1B] opacity-60 leading-relaxed max-w-2xl mx-auto">
               Enter your tracking number below to get real-time updates on your shipment's location and delivery status.
             </p>
@@ -412,7 +435,7 @@ export function Tracking() {
                       </h2>
 
                       <div className="flex items-center gap-4 mb-8">
-                        <div 
+                        <div
                           className="px-4 py-2 text-sm font-mono"
                           style={{
                             backgroundColor: statusConfig[trackingData.statusCode]?.bgColor.replace('/10', '').replace('/', '') + '1A',
@@ -585,7 +608,7 @@ export function Tracking() {
                     {trackingData.timeline.map((event: any, index: number) => {
                       const StatusIcon = statusConfig[event.statusCode]?.icon || Circle;
                       const isLast = index === trackingData.timeline.length - 1;
-                      
+
                       return (
                         <motion.div
                           key={index}
@@ -596,7 +619,7 @@ export function Tracking() {
                         >
                           {/* Timeline Line */}
                           {!isLast && (
-                            <div 
+                            <div
                               className="absolute left-6 top-12 w-px h-full"
                               style={{
                                 backgroundColor: event.completed ? statusConfig[event.statusCode]?.color : '#1A1A1B20'
@@ -605,21 +628,19 @@ export function Tracking() {
                           )}
 
                           {/* Status Icon */}
-                          <div 
-                            className={`relative z-10 flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                              event.current ? 'ring-4 ring-offset-4' : ''
-                            }`}
+                          <div
+                            className={`relative z-10 flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${event.current ? 'ring-4 ring-offset-4' : ''
+                              }`}
                             style={{
-                              backgroundColor: event.completed || event.current 
-                                ? statusConfig[event.statusCode]?.color 
+                              backgroundColor: event.completed || event.current
+                                ? statusConfig[event.statusCode]?.color
                                 : '#F5F7F8',
                               ringColor: event.current ? statusConfig[event.statusCode]?.color + '40' : 'transparent'
                             }}
                           >
-                            <StatusIcon 
-                              className={`w-6 h-6 ${
-                                event.completed || event.current ? 'text-white' : 'text-[#1A1A1B] opacity-20'
-                              }`}
+                            <StatusIcon
+                              className={`w-6 h-6 ${event.completed || event.current ? 'text-white' : 'text-[#1A1A1B] opacity-20'
+                                }`}
                               strokeWidth={2}
                             />
                           </div>
@@ -627,9 +648,9 @@ export function Tracking() {
                           {/* Event Details */}
                           <div className="flex-1">
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
-                              <h4 
+                              <h4
                                 className="text-xl text-[#1A1A1B] tracking-tight"
-                                style={{ 
+                                style={{
                                   fontWeight: event.current ? 700 : 600,
                                   opacity: event.completed || event.current ? 1 : 0.4
                                 }}
@@ -643,13 +664,13 @@ export function Tracking() {
                                 <span>{event.time}</span>
                               </div>
                             </div>
-                            
+
                             <div className="flex items-center gap-2 mb-2">
                               <MapPin className="w-4 h-4 text-[#1A1A1B] opacity-40" />
                               <p className="text-sm text-[#1A1A1B] opacity-60">{event.location}</p>
                             </div>
-                            
-                            <p 
+
+                            <p
                               className="text-[#1A1A1B] leading-relaxed"
                               style={{ opacity: event.completed || event.current ? 0.7 : 0.4 }}
                             >
@@ -678,7 +699,7 @@ export function Tracking() {
           </div>
         </section>
       )}
-      
+
       <Footer />
     </div>
   );

@@ -13,7 +13,7 @@ const JWT_EXPIRE = process.env.JWT_EXPIRE || '24h';
 const verifyToken = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    
+
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -23,7 +23,7 @@ const verifyToken = async (req, res, next) => {
 
     const decoded = jwt.verify(token, JWT_SECRET);
     const admin = await Admin.findById(decoded.id).select('-password');
-    
+
     if (!admin || !admin.isActive) {
       return res.status(401).json({
         success: false,
@@ -56,7 +56,7 @@ router.post('/admin/login', async (req, res) => {
 
     // Find admin by email and check if not locked
     const admin = await Admin.findByEmailAndNotLocked(email);
-    
+
     if (!admin) {
       return res.status(401).json({
         success: false,
@@ -66,7 +66,7 @@ router.post('/admin/login', async (req, res) => {
 
     // Check password
     const isMatch = await admin.comparePassword(password);
-    
+
     if (!isMatch) {
       // Increment login attempts
       await admin.incLoginAttempts();
@@ -87,7 +87,7 @@ router.post('/admin/login', async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { 
+      {
         id: admin._id,
         email: admin.email,
         role: admin.role
@@ -161,11 +161,11 @@ router.put('/admin/profile', verifyToken, async (req, res) => {
 
     // Check if email is already taken by another admin
     if (email !== admin.email) {
-      const existingAdmin = await Admin.findOne({ 
+      const existingAdmin = await Admin.findOne({
         email: email,
         _id: { $ne: admin._id }
       });
-      
+
       if (existingAdmin) {
         return res.status(400).json({
           success: false,
@@ -178,7 +178,7 @@ router.put('/admin/profile', verifyToken, async (req, res) => {
     admin.name = name;
     admin.email = email;
     admin.updatedAt = new Date();
-    
+
     await admin.save();
 
     res.json({
@@ -235,7 +235,7 @@ router.put('/admin/change-password', verifyToken, async (req, res) => {
 
     // Verify current password
     const isCurrentPasswordValid = await admin.comparePassword(currentPassword);
-    
+
     if (!isCurrentPasswordValid) {
       return res.status(401).json({
         success: false,
@@ -246,7 +246,7 @@ router.put('/admin/change-password', verifyToken, async (req, res) => {
     // Update password (will be hashed by pre-save middleware)
     admin.password = newPassword;
     admin.updatedAt = new Date();
-    
+
     await admin.save();
 
     res.json({
@@ -268,7 +268,7 @@ router.post('/admin/logout', verifyToken, async (req, res) => {
   try {
     // In a more advanced implementation, you might want to blacklist the token
     // For now, we'll just return success as the client should clear the token
-    
+
     res.json({
       success: true,
       message: 'Logout successful'
@@ -299,6 +299,159 @@ router.get('/admin/verify-token', verifyToken, async (req, res) => {
     });
   } catch (error) {
     console.error('Token verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// GET /api/admin/users - List all admins
+router.get('/admin/users', verifyToken, async (req, res) => {
+  try {
+    // Optional: Check if super-admin
+    // if (req.admin.role !== 'super-admin') ...
+
+    const admins = await Admin.find().select('-password').sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      data: admins
+    });
+  } catch (error) {
+    console.error('List admins error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// POST /api/admin/register - Create new admin
+router.post('/admin/register', verifyToken, async (req, res) => {
+  try {
+    const { name, email, password, role, phone } = req.body;
+
+    // Validate input
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, and password are required.'
+      });
+    }
+
+    // Check existing
+    const existingAdmin = await Admin.findOne({ email });
+    if (existingAdmin) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already taken.'
+      });
+    }
+
+    // Create admin
+    const admin = new Admin({
+      name,
+      email,
+      password,
+      role: role || 'admin',
+      phone // Assuming schema update or ignored if not in schema yet
+    });
+
+    await admin.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Admin created successfully',
+      data: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role
+      }
+    });
+
+  } catch (error) {
+    console.error('Create admin error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// PUT /api/admin/users/:id - Update admin
+router.put('/admin/users/:id', verifyToken, async (req, res) => {
+  try {
+    const { name, email, role, status } = req.body;
+    const adminId = req.params.id;
+
+    // Find admin
+    const admin = await Admin.findById(adminId);
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin not found'
+      });
+    }
+
+    // Update fields
+    if (name) admin.name = name;
+    if (email) admin.email = email;
+    if (role) admin.role = role;
+    if (status) admin.isActive = status === 'active';
+
+    await admin.save();
+
+    res.json({
+      success: true,
+      message: 'Admin updated successfully',
+      data: {
+        id: admin._id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+        isActive: admin.isActive
+      }
+    });
+
+  } catch (error) {
+    console.error('Update admin error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+});
+
+// DELETE /api/admin/users/:id - Delete admin
+router.delete('/admin/users/:id', verifyToken, async (req, res) => {
+  try {
+    const adminId = req.params.id;
+
+    // Prevent deleting self
+    if (adminId === req.admin._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete your own account'
+      });
+    }
+
+    const admin = await Admin.findByIdAndDelete(adminId);
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Admin deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Delete admin error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'

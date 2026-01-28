@@ -16,10 +16,10 @@ const mongoStorageHelpers = {
         maxPoolSize: 10,
         socketTimeoutMS: 45000
       });
-      
+
       console.log('✅ Connected to MongoDB');
       console.log(`📊 Database: ${connectionString.includes('mongodb.net') ? 'MongoDB Atlas (Cloud)' : 'Local MongoDB'}`);
-      
+
       // Create initial data if collection is empty
       const count = await Shipment.countDocuments();
       if (count === 0) {
@@ -35,7 +35,7 @@ const mongoStorageHelpers = {
       } catch (error) {
         console.error('⚠️  Warning: Could not initialize admin user:', error.message);
       }
-      
+
       return true;
     } catch (error) {
       console.error('❌ MongoDB connection failed:', error.message);
@@ -46,10 +46,10 @@ const mongoStorageHelpers = {
   // Find shipment by tracking ID
   findByTrackingId: async (trackingId) => {
     try {
-      const shipment = await Shipment.findOne({ 
-        trackingId: trackingId.toUpperCase() 
+      const shipment = await Shipment.findOne({
+        trackingId: trackingId.toUpperCase()
       }).lean();
-      
+
       if (shipment) {
         // Transform MongoDB document to match API format with all fields
         return {
@@ -84,10 +84,10 @@ const mongoStorageHelpers = {
   findByTrackingIds: async (trackingIds) => {
     try {
       const upperIds = trackingIds.map(id => id.toUpperCase());
-      const shipments = await Shipment.find({ 
+      const shipments = await Shipment.find({
         trackingId: { $in: upperIds }
       }).lean();
-      
+
       return shipments.map(shipment => ({
         id: shipment._id.toString(),
         trackingId: shipment.trackingId,
@@ -181,7 +181,7 @@ const mongoStorageHelpers = {
       });
 
       const savedShipment = await newShipment.save();
-      
+
       return {
         id: savedShipment._id.toString(),
         trackingId: savedShipment.trackingId,
@@ -240,8 +240,8 @@ const mongoStorageHelpers = {
   // Delete shipment
   deleteShipment: async (trackingId) => {
     try {
-      const result = await Shipment.findOneAndDelete({ 
-        trackingId: trackingId.toUpperCase() 
+      const result = await Shipment.findOneAndDelete({
+        trackingId: trackingId.toUpperCase()
       });
       return !!result;
     } catch (error) {
@@ -257,7 +257,7 @@ const mongoStorageHelpers = {
       const statusStats = await Shipment.aggregate([
         { $group: { _id: '$status', count: { $sum: 1 } } }
       ]);
-      
+
       return {
         totalShipments: total,
         database: 'MongoDB',
@@ -280,7 +280,7 @@ async function createSampleData() {
   const sampleShipments = [
     {
       trackingId: 'CC001234567',
-      status: 'In Transit',
+      status: 'in-transit',
       customerInfo: {
         name: 'John Smith',
         email: 'john.smith@email.com',
@@ -290,23 +290,22 @@ async function createSampleData() {
       shipmentDetails: {
         origin: 'New York, USA',
         destination: 'London, UK',
-        weight: '25kg',
-        dimensions: '50x40x30cm',
-        service: 'Express International',
+        weight: 25,
+        dimensions: { length: 50, width: 40, height: 30 },
+        serviceType: 'express',
+        description: 'Electronics and Accessories',
         estimatedDelivery: new Date('2025-07-20T10:00:00Z')
       },
-      trackingEvents: [
+      events: [
         {
-          id: 'evt1',
-          status: 'Package Picked Up',
+          status: 'picked-up',
           description: 'Package has been picked up from sender',
           location: 'New York Distribution Center',
           timestamp: new Date('2025-07-14T09:00:00Z'),
           completed: true
         },
         {
-          id: 'evt2',
-          status: 'In Transit',
+          status: 'in-transit',
           description: 'Package is on its way to destination',
           location: 'JFK International Airport',
           timestamp: new Date('2025-07-15T14:30:00Z'),
@@ -316,7 +315,7 @@ async function createSampleData() {
     },
     {
       trackingId: 'CC001234568',
-      status: 'Delivered',
+      status: 'delivered',
       customerInfo: {
         name: 'Sarah Johnson',
         email: 'sarah.johnson@email.com',
@@ -326,23 +325,22 @@ async function createSampleData() {
       shipmentDetails: {
         origin: 'Los Angeles, USA',
         destination: 'Sydney, Australia',
-        weight: '15kg',
-        dimensions: '40x30x25cm',
-        service: 'Standard International',
+        weight: 15,
+        dimensions: { length: 40, width: 30, height: 25 },
+        serviceType: 'standard',
+        description: 'Clothing and Apparel',
         estimatedDelivery: new Date('2025-07-10T16:00:00Z')
       },
-      trackingEvents: [
+      events: [
         {
-          id: 'evt6',
-          status: 'Package Picked Up',
+          status: 'picked-up',
           description: 'Package has been picked up from sender',
           location: 'Los Angeles Distribution Center',
           timestamp: new Date('2025-07-05T10:00:00Z'),
           completed: true
         },
         {
-          id: 'evt10',
-          status: 'Delivered',
+          status: 'delivered',
           description: 'Package delivered successfully',
           location: 'Sydney, Australia',
           timestamp: new Date('2025-07-10T16:00:00Z'),

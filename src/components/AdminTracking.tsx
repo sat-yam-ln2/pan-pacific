@@ -29,7 +29,7 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
-import { Footer } from './Footer';
+
 
 // Types
 interface Shipment {
@@ -275,13 +275,13 @@ export function AdminTracking() {
     filtered.sort((a, b) => {
       const aValue = a[sortField];
       const bValue = b[sortField];
-      
+
       if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortDirection === 'asc' 
+        return sortDirection === 'asc'
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       }
-      
+
       return 0;
     });
 
@@ -297,7 +297,7 @@ export function AdminTracking() {
   const stats = useMemo(() => {
     const total = shipments.length;
     const active = shipments.filter(s => ['in-transit', 'customs', 'out-for-delivery'].includes(s.status)).length;
-    const delivered = shipments.filter(s => s.status === 'delivered' && 
+    const delivered = shipments.filter(s => s.status === 'delivered' &&
       new Date(s.lastUpdated).getMonth() === new Date().getMonth()).length;
     const pending = shipments.filter(s => s.status === 'pending').length;
 
@@ -468,18 +468,18 @@ export function AdminTracking() {
               <h1 className="text-2xl font-bold">Admin Dashboard</h1>
               <p className="text-sm text-white/70">Shipment Management System</p>
             </div>
-            
+
             <div className="flex items-center gap-6">
               <div className="text-right hidden md:block">
-                <p className="text-sm font-semibold">{new Date().toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
+                <p className="text-sm font-semibold">{new Date().toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
                 })}</p>
                 <p className="text-xs text-white/70">{new Date().toLocaleTimeString()}</p>
               </div>
-              
+
               <div className="flex items-center gap-3 pl-6 border-l border-white/20">
                 <div className="w-10 h-10 bg-[#FFD700] rounded-full flex items-center justify-center font-bold text-[#003893]">
                   {adminUser.avatar}
@@ -489,7 +489,7 @@ export function AdminTracking() {
                   <p className="text-xs text-white/70">{adminUser.email}</p>
                 </div>
               </div>
-              
+
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors flex items-center gap-2"
@@ -770,7 +770,7 @@ export function AdminTracking() {
                 >
                   <ChevronLeft size={20} />
                 </button>
-                
+
                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                   let pageNum;
                   if (totalPages <= 5) {
@@ -782,22 +782,21 @@ export function AdminTracking() {
                   } else {
                     pageNum = currentPage - 2 + i;
                   }
-                  
+
                   return (
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`w-10 h-10 rounded-lg font-semibold transition-colors ${
-                        currentPage === pageNum
-                          ? 'bg-[#003893] text-white'
-                          : 'border-2 border-[#1A1A1B]/20 hover:bg-[#F5F7F8]'
-                      }`}
+                      className={`w-10 h-10 rounded-lg font-semibold transition-colors ${currentPage === pageNum
+                        ? 'bg-[#003893] text-white'
+                        : 'border-2 border-[#1A1A1B]/20 hover:bg-[#F5F7F8]'
+                        }`}
                     >
                       {pageNum}
                     </button>
                   );
                 })}
-                
+
                 <button
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
@@ -842,23 +841,22 @@ export function AdminTracking() {
         />
       </div>
 
-      <Footer />
     </>
   );
 }
 
 // Create/Edit Modal Component
-function CreateEditModal({ 
-  isOpen, 
-  onClose, 
-  shipment, 
-  isEditMode, 
-  onSave 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  shipment: Shipment | null; 
-  isEditMode: boolean; 
+function CreateEditModal({
+  isOpen,
+  onClose,
+  shipment,
+  isEditMode,
+  onSave
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  shipment: Shipment | null;
+  isEditMode: boolean;
   onSave: (shipment: Shipment) => void;
 }) {
   const [formData, setFormData] = useState<Partial<Shipment>>(

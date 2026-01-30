@@ -3,46 +3,44 @@ const nodemailer = require('nodemailer');
 const router = express.Router();
 
 // Email configuration using environment variables
-// Supports generic SMTP (e.g., Zoho), specific service (e.g., Gmail), with sensible defaults
+// Use MAIL (or EMAIL_USER) = your email, EMAIL_APP_PASSWORD (or EMAIL_PASS) = 16-digit app password
+const getEmailUser = () => process.env.MAIL || process.env.EMAIL_USER;
+const getEmailPass = () => process.env.EMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
+
 const createTransporter = () => {
+  const user = getEmailUser();
+  const pass = getEmailPass();
+
+  if (!user || !pass) {
+    throw new Error('Email not configured: set MAIL and EMAIL_APP_PASSWORD (or EMAIL_USER and EMAIL_PASS) in .env');
+  }
+
   // If explicit SMTP host is provided, prefer that (Zoho recommended)
   if (process.env.EMAIL_HOST) {
     const port = Number(process.env.EMAIL_PORT || 465);
     const secure = typeof process.env.EMAIL_SECURE === 'string'
       ? process.env.EMAIL_SECURE.toLowerCase() === 'true'
-      : port === 465; // default secure for 465
+      : port === 465;
 
     return nodemailer.createTransport({
       host: process.env.EMAIL_HOST,
       port,
-      secure, // true for 465, false for 587/STARTTLS
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-      // For some providers you may need: requireTLS: true (587), or custom tls options
-      // tls: { rejectUnauthorized: false }
+      secure,
+      auth: { user, pass }
     });
   }
 
-  // Fallback to service name if provided (e.g., 'gmail')
   if (process.env.EMAIL_SERVICE) {
     return nodemailer.createTransport({
       service: process.env.EMAIL_SERVICE,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
+      auth: { user, pass }
     });
   }
 
-  // Default to Gmail service for backward compatibility
+  // Default to Gmail (use 16-digit App Password for Gmail)
   return nodemailer.createTransport({
     service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER || 'your-email@gmail.com',
-      pass: process.env.EMAIL_PASS || 'your-app-password'
-    }
+    auth: { user, pass }
   });
 };
 
@@ -68,8 +66,8 @@ router.post('/quote', async (req, res) => {
 
     // Email to admin/business owner
     const adminEmailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@your-domain.com',
-  to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER || 'info@cargocapital.com',
+      from: process.env.EMAIL_FROM || getEmailUser() || 'no-reply@panpacific.com',
+      to: process.env.ADMIN_EMAIL || getEmailUser() || getEmailUser(),
       subject: `New Quote Request from ${name}`,
       html: `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f4f8fb; padding: 0; margin: 0;">
@@ -117,9 +115,9 @@ router.post('/quote', async (req, res) => {
 
     // Confirmation email to customer
     const customerEmailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@your-domain.com',
+      from: process.env.EMAIL_FROM || getEmailUser() || 'no-reply@panpacific.com',
       to: email,
-      subject: 'Quote Request Received - Cargo Express',
+      subject: 'Quote Request Received - Pan Pacific Shipping',
       html: `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f4f8fb; padding: 0; margin: 0;">
           <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">
@@ -190,8 +188,8 @@ router.post('/contact', async (req, res) => {
 
     // Email to admin/business owner (Contact)
     const adminEmailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@your-domain.com',
-  to: process.env.ADMIN_EMAIL || process.env.EMAIL_USER || 'info@cargocapital.com',
+      from: process.env.EMAIL_FROM || getEmailUser() || 'no-reply@panpacific.com',
+      to: process.env.ADMIN_EMAIL || getEmailUser() || getEmailUser(),
       subject: `Contact Form: ${subject || 'New Message'} - from ${name}`,
       html: `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f4f8fb; padding: 0; margin: 0;">
@@ -232,9 +230,9 @@ router.post('/contact', async (req, res) => {
 
     // Confirmation email to customer (Contact)
     const customerEmailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@your-domain.com',
+      from: process.env.EMAIL_FROM || getEmailUser() || 'no-reply@panpacific.com',
       to: email,
-      subject: 'Message Received - Thank You for Contacting Cargo Express',
+      subject: 'Message Received - Thank You for Contacting Pan Pacific',
       html: `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f4f8fb; padding: 0; margin: 0;">
           <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden;">

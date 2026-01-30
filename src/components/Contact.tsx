@@ -16,6 +16,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { Link } from 'react-router';
+import { post } from '../services/api';
 import { Footer } from './Footer';
 
 interface FormData {
@@ -107,7 +108,7 @@ export function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -115,23 +116,37 @@ export function Contact() {
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const result = await post<{ success: boolean; message?: string }>(
+        '/contact',
+        {
+          name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          subject: formData.subject,
+          message: formData.message
+        },
+        false
+      );
+
+      if (result.success) {
+        setSubmitStatus('success');
+        setFormData({
+          fullName: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: ''
+        });
+        setTimeout(() => setSubmitStatus('idle'), 5000);
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch {
+      setSubmitStatus('error');
+    } finally {
       setIsSubmitting(false);
-      setSubmitStatus('success');
-      setFormData({
-        fullName: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: ''
-      });
-      
-      // Reset success message after 5 seconds
-      setTimeout(() => {
-        setSubmitStatus('idle');
-      }, 5000);
-    }, 2000);
+    }
   };
 
   const handleChange = (

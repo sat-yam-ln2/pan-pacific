@@ -14,8 +14,11 @@ import {
   Plane,
   Zap,
   Shield,
-  Headphones
+  Headphones,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
+import { post } from '../services/api';
 import { Footer } from './Footer';
 
 // Comprehensive Country and Airport data
@@ -321,6 +324,8 @@ const benefits = [
 
 export function Quote() {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   
   // Form state
@@ -403,27 +408,49 @@ export function Quote() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (validateForm()) {
-      // Simulate form submission
-      console.log('Form submitted:', {
-        ...formData,
-        pickupCountry,
-        pickupAirport,
-        destCountry,
-        destAirport,
-        serviceType
-      });
-      setSubmitted(true);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      // Scroll to first error
+    setSubmitError(null);
+
+    if (!validateForm()) {
       const firstErrorElement = document.querySelector('.error-message');
       if (firstErrorElement) {
         firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await post<{ success: boolean; message?: string }>(
+        '/quote',
+        {
+          name: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          company: formData.companyName || undefined,
+          origin: `${formData.pickupCity}, ${pickupCountry}${pickupAirport ? ` (${pickupAirport})` : ''}`,
+          destination: `${formData.destCity}, ${destCountry}${destAirport ? ` (${destAirport})` : ''}`,
+          weight: formData.weight,
+          dimensions: `${formData.length} x ${formData.width} x ${formData.height}`,
+          cargoType: formData.goodsType,
+          serviceType: serviceType === 'express' ? 'Air' : serviceType === 'economy' ? 'Sea' : serviceType,
+          urgency: 'Standard',
+          message: formData.notes || undefined
+        },
+        false
+      );
+
+      if (result.success) {
+        setSubmitted(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setSubmitError(result.message || 'Failed to send quote request. Please try again.');
+      }
+    } catch {
+      setSubmitError('Failed to send quote request. Please try again or contact us directly.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -540,6 +567,12 @@ export function Quote() {
               className="lg:col-span-2"
             >
               <form onSubmit={handleSubmit} className="space-y-6">
+                {submitError && (
+                  <div className="bg-red-50 border-2 border-red-200 text-red-800 px-4 py-3 rounded-lg flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <p className="text-sm font-medium">{submitError}</p>
+                  </div>
+                )}
                 {/* Section 1: Pickup Information */}
                 <div className="bg-white p-8 lg:p-10">
                   <div className="flex items-center gap-3 mb-8">
@@ -983,11 +1016,21 @@ export function Quote() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full py-5 bg-[#003893] text-white hover:bg-[#002670] transition-colors text-lg flex items-center justify-center gap-3"
+                  disabled={isSubmitting}
+                  className="w-full py-5 bg-[#003893] text-white hover:bg-[#002670] disabled:opacity-70 disabled:cursor-not-allowed transition-colors text-lg flex items-center justify-center gap-3"
                   style={{ fontWeight: 700 }}
                 >
-                  <FileText className="w-6 h-6" />
-                  Get Quote
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="w-6 h-6" />
+                      Get Quote
+                    </>
+                  )}
                 </button>
               </form>
             </motion.div>

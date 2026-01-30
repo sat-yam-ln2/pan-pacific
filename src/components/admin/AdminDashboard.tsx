@@ -23,7 +23,8 @@ interface Shipment {
   serviceType: string;
   createdDate: string;
   lastUpdated: string;
-  destination: string;
+  destination?: string;
+  shipmentDetails?: { destination?: string };
 }
 
 interface AdminDashboardProps {
@@ -47,15 +48,13 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
     return { total, active, delivered, pending, revenue };
   }, [shipments]);
 
-  // Monthly shipments chart data
+  // Shipment Trends (6 months) – dynamic from real data: created per month, delivered per month
   const monthlyData = useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const currentMonth = new Date().getMonth();
-    // Show last 6 months
-    const displayedMonths = [];
+    const now = new Date();
+    const displayedMonths: { name: string; monthIndex: number; year: number; shipments: number; delivered: number }[] = [];
     for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(currentMonth - i);
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       displayedMonths.push({
         name: months[d.getMonth()],
         monthIndex: d.getMonth(),
@@ -66,15 +65,23 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
     }
 
     shipments.forEach(s => {
-      const date = new Date(s.createdDate);
-      const monthIndex = date.getMonth();
-      const year = date.getFullYear();
+      // Total Shipments: count by creation month
+      const createdDate = s.createdDate ? new Date(s.createdDate) : null;
+      if (createdDate && !isNaN(createdDate.getTime())) {
+        const m = displayedMonths.find(
+          d => d.monthIndex === createdDate.getMonth() && d.year === createdDate.getFullYear()
+        );
+        if (m) m.shipments++;
+      }
 
-      const monthData = displayedMonths.find(m => m.monthIndex === monthIndex && m.year === year);
-      if (monthData) {
-        monthData.shipments++;
-        if (s.status === 'delivered') {
-          monthData.delivered++;
+      // Delivered: count by delivery month (when it was marked delivered), not creation month
+      if (s.status === 'delivered') {
+        const deliveredAt = s.lastUpdated ? new Date(s.lastUpdated) : createdDate;
+        if (deliveredAt && !isNaN(deliveredAt.getTime())) {
+          const m = displayedMonths.find(
+            d => d.monthIndex === deliveredAt.getMonth() && d.year === deliveredAt.getFullYear()
+          );
+          if (m) m.delivered++;
         }
       }
     });
@@ -100,12 +107,15 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
     return Object.values(types).filter(t => t.count > 0);
   }, [shipments]);
 
-  // Top destinations
+  // Top destinations – derived from real shipment data (destination city + count)
   const topDestinations = useMemo(() => {
     const destinations: Record<string, number> = {};
     shipments.forEach(s => {
-      const dest = s.destination.split(',')[0]; // Get city name
-      destinations[dest] = (destinations[dest] || 0) + 1;
+      const raw = s.destination ?? (s as any).shipmentDetails?.destination ?? '';
+      const city = String(raw).split(',')[0].trim();
+      if (city) {
+        destinations[city] = (destinations[city] || 0) + 1;
+      }
     });
 
     return Object.entries(destinations)
@@ -234,7 +244,7 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
             Shipment Trends (6 Months)
           </h3>
           <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={monthlyData}>
+            <AreaChart data={monthlyData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorShipments" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#003893" stopOpacity={0.8} />
@@ -246,25 +256,27 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#1A1A1B20" />
-              <XAxis dataKey="name" stroke="#1A1A1B" />
-              <YAxis stroke="#1A1A1B" />
-              <Tooltip />
+              <XAxis dataKey="name" stroke="#1A1A1B" tick={{ fontSize: 12 }} />
+              <YAxis stroke="#1A1A1B" tick={{ fontSize: 12 }} allowDecimals={false} />
+              <Tooltip labelFormatter={(label) => `Month: ${label}`} contentStyle={{ fontSize: 12 }} />
               <Legend />
               <Area
                 type="monotone"
                 dataKey="shipments"
                 stroke="#003893"
+                strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorShipments)"
-                name="Total Shipments"
+                name="Total Shipments (created)"
               />
               <Area
                 type="monotone"
                 dataKey="delivered"
                 stroke="#DC143C"
+                strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorDelivered)"
-                name="Delivered"
+                name="Delivered (in month)"
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -305,7 +317,7 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
 
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Destinations */}
+        {/* Top Destinations – dynamic from shipment data */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -317,25 +329,33 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
             Top Destinations
           </h3>
           <div className="space-y-4">
-            {topDestinations.map((dest, index) => (
-              <div key={dest.name} className="flex items-center gap-4">
-                <div className="w-8 h-8 bg-[#003893] text-white rounded-full flex items-center justify-center text-sm font-bold">
-                  {index + 1}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-[#1A1A1B]">{dest.name}</span>
-                    <span className="text-sm text-[#1A1A1B]/60">{dest.value} shipments</span>
+            {topDestinations.length === 0 ? (
+              <p className="text-sm text-[#1A1A1B]/50 py-4">No destinations yet. Data will appear here as shipments are added.</p>
+            ) : (
+              topDestinations.map((dest, index) => {
+                const maxVal = topDestinations[0]?.value ?? 1;
+                const pct = Math.round((dest.value / maxVal) * 100);
+                return (
+                  <div key={`${dest.name}-${index}`} className="flex items-center gap-4">
+                    <div className="w-8 h-8 bg-[#003893] text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-semibold text-[#1A1A1B] truncate">{dest.name}</span>
+                        <span className="text-sm text-[#1A1A1B]/60 flex-shrink-0 ml-2">{dest.value} shipments</span>
+                      </div>
+                      <div className="w-full bg-[#F5F7F8] rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-[#003893] to-[#002a6b] h-2 rounded-full transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-full bg-[#F5F7F8] rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-[#003893] to-[#002a6b] h-2 rounded-full"
-                      style={{ width: `${(dest.value / topDestinations[0].value) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
+                );
+              })
+            )}
           </div>
         </motion.div>
 

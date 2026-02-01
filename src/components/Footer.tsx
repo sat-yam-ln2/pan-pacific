@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router';
-import { 
-  MapPin, 
-  Phone, 
-  Mail, 
+import {
+  MapPin,
+  Phone,
+  Mail,
   Clock,
   Facebook,
   Linkedin,
@@ -21,7 +21,7 @@ export function Footer() {
     <footer className="relative bg-white">
       {/* Threads Divider */}
       <ThreadsDivider />
-      
+
       {/* Main Footer Content */}
       <div className="relative bg-white text-[#1A1A1B] px-6 lg:px-20 pt-20 pb-12">
         <div className="max-w-[1600px] mx-auto">
@@ -34,40 +34,40 @@ export function Footer() {
                 <span className="text-[#003893]">Shipping & Logistics</span>
               </h3>
               <p className="text-[#1A1A1B]/60 leading-relaxed mb-6">
-                Nepal's trusted partner for international freight forwarding since 2011. 
+                Nepal's trusted partner for international freight forwarding since 2011.
                 Connecting businesses to global markets with precision and reliability.
               </p>
               <div className="flex items-center gap-4">
-                <a 
-                  href="https://facebook.com" 
-                  target="_blank" 
+                <a
+                  href="https://facebook.com"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 border-2 border-[#1A1A1B]/20 hover:border-[#003893] hover:bg-[#003893] hover:text-white text-[#1A1A1B] flex items-center justify-center transition-all duration-300"
                   aria-label="Facebook"
                 >
                   <Facebook className="w-5 h-5" />
                 </a>
-                <a 
-                  href="https://linkedin.com" 
-                  target="_blank" 
+                <a
+                  href="https://linkedin.com"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 border-2 border-[#1A1A1B]/20 hover:border-[#003893] hover:bg-[#003893] hover:text-white text-[#1A1A1B] flex items-center justify-center transition-all duration-300"
                   aria-label="LinkedIn"
                 >
                   <Linkedin className="w-5 h-5" />
                 </a>
-                <a 
-                  href="https://twitter.com" 
-                  target="_blank" 
+                <a
+                  href="https://twitter.com"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 border-2 border-[#1A1A1B]/20 hover:border-[#003893] hover:bg-[#003893] hover:text-white text-[#1A1A1B] flex items-center justify-center transition-all duration-300"
                   aria-label="Twitter"
                 >
                   <Twitter className="w-5 h-5" />
                 </a>
-                <a 
-                  href="https://instagram.com" 
-                  target="_blank" 
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="w-10 h-10 border-2 border-[#1A1A1B]/20 hover:border-[#003893] hover:bg-[#003893] hover:text-white text-[#1A1A1B] flex items-center justify-center transition-all duration-300"
                   aria-label="Instagram"
@@ -84,8 +84,8 @@ export function Footer() {
               </h4>
               <ul className="space-y-3">
                 <li>
-                  <Link 
-                    to="/services" 
+                  <Link
+                    to="/services"
                     className="text-[#1A1A1B]/60 hover:text-[#FFD700] transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
@@ -93,8 +93,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    to="/services" 
+                  <Link
+                    to="/services"
                     className="text-[#1A1A1B]/60 hover:text-[#FFD700] transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
@@ -102,8 +102,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    to="/services" 
+                  <Link
+                    to="/services"
                     className="text-[#1A1A1B]/60 hover:text-[#FFD700] transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
@@ -111,8 +111,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    to="/services" 
+                  <Link
+                    to="/services"
                     className="text-[#1A1A1B]/60 hover:text-[#FFD700] transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
@@ -120,8 +120,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    to="/services" 
+                  <Link
+                    to="/services"
                     className="text-[#1A1A1B]/60 hover:text-[#FFD700] transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
@@ -129,8 +129,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    to="/services" 
+                  <Link
+                    to="/services"
                     className="text-[#1A1A1B]/60 hover:text-[#FFD700] transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
@@ -147,8 +147,8 @@ export function Footer() {
               </h4>
               <ul className="space-y-3">
                 <li>
-                  <Link 
-                    to="/" 
+                  <Link
+                    to="/"
                     className="text-[#1A1A1B]/60 hover:text-[#FFD700] transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
@@ -156,8 +156,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    to="/about" 
+                  <Link
+                    to="/about"
                     className="text-[#1A1A1B]/60 hover:text-[#FFD700] transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
@@ -165,8 +165,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    to="/tracking" 
+                  <Link
+                    to="/tracking"
                     className="text-[#1A1A1B]/60 hover:text-[#FFD700] transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
@@ -174,8 +174,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link 
-                    to="/quote" 
+                  <Link
+                    to="/quote"
                     className="text-[#1A1A1B]/60 hover:text-[#FFD700] transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
@@ -183,8 +183,8 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <a 
-                    href="#faq" 
+                  <a
+                    href="#faq"
                     className="text-[#1A1A1B]/60 hover:text-[#FFD700] transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
@@ -192,8 +192,8 @@ export function Footer() {
                   </a>
                 </li>
                 <li>
-                  <a 
-                    href="#contact" 
+                  <a
+                    href="#contact"
                     className="text-[#1A1A1B]/60 hover:text-[#FFD700] transition-colors flex items-center gap-2 group"
                   >
                     <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -ml-6 group-hover:ml-0 transition-all" />
@@ -317,7 +317,7 @@ export function Footer() {
               Leadership
             </p>
             <p className="text-sm text-[#1A1A1B]/60">
-              <span className="text-[#003893]">Tejman Tamang</span> & <span className="text-[#003893]">Manoj Thapa</span> - Managing Directors
+              <span className="text-[#003893]">Manoj Thapa</span> - Managing Director
             </p>
             <p className="text-xs text-[#1A1A1B]/40 mt-2">
               14+ Years of Excellence in Himalayan Logistics

@@ -8,7 +8,7 @@ const initialBlogs = [
         excerpt: 'Everything you need to know about shipping cargo internationally from Nepal, including documentation, customs procedures, and cost-saving strategies for businesses and individuals.',
         content: 'Long form content for Guide to International Shipping...'.repeat(20),
         category: 'How-To Guides',
-        author: 'Tejman Tamang',
+        author: 'Manoj Thapa',
         publishedAt: new Date('January 10, 2026'),
         readTime: '8 min read',
         image: 'cargo',

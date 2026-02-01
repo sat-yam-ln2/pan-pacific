@@ -36,7 +36,7 @@ const services = [
 
 export function ServicesPreview() {
   return (
-    <section className="relative py-32 px-6 lg:px-20">
+    <section className="relative py-32 px-6 lg:px-20 bg-white">
       <div className="max-w-[1600px] mx-auto">
         {/* Section Header */}
         <motion.div
@@ -68,14 +68,14 @@ export function ServicesPreview() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="group bg-[#F5F7F8] p-10 lg:p-14 hover:bg-white transition-all duration-500 relative overflow-hidden"
+              className="group bg-white p-10 lg:p-14 hover:bg-[#F5F7F8] transition-all duration-500 relative overflow-hidden"
             >
               {/* Hover Accent */}
               <div className="absolute top-0 left-0 w-full h-1 bg-[#FFD700] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
-              
+
               <div className="relative z-10">
                 <service.icon className="w-12 h-12 text-[#003893] mb-6 opacity-20 group-hover:opacity-100 transition-opacity duration-500" strokeWidth={1.5} />
-                
+
                 <div className="mb-4">
                   <h3 className="text-3xl lg:text-4xl text-[#1A1A1B] mb-2 tracking-tight" style={{ fontWeight: 700 }}>
                     {service.title}
@@ -84,11 +84,11 @@ export function ServicesPreview() {
                     {service.subtitle}
                   </div>
                 </div>
-                
+
                 <p className="text-[#1A1A1B] opacity-50 leading-relaxed mb-6">
                   {service.description}
                 </p>
-                
+
                 <div className="font-mono text-xs text-[#1A1A1B] opacity-30 tracking-wider">
                   {service.metrics}
                 </div>
@@ -129,10 +129,10 @@ export function ServicesPreview() {
               <span className="tracking-wide" style={{ fontWeight: 600 }}>
                 View All Services
               </span>
-              <svg 
-                className="w-5 h-5 group-hover:translate-x-1 transition-transform" 
-                fill="none" 
-                stroke="currentColor" 
+              <svg
+                className="w-5 h-5 group-hover:translate-x-1 transition-transform"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

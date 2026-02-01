@@ -67,7 +67,6 @@ Admin user management with:
 - Super Admin protection (cannot delete)
 
 **Default Admin Users:**
-- Tejman Tamang (Super Admin)
 - Manoj Thapa (Super Admin)
 - Admin User (Admin)
 - Sita Shrestha (Manager)

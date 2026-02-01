@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { 
-  Shield, 
-  Globe2, 
-  Zap, 
+import {
+  Shield,
+  Globe2,
+  Zap,
   Heart,
   Ear,
   FileText,
@@ -97,7 +97,7 @@ export function About() {
       {/* Hero Section */}
       <section className="relative pt-48 pb-32 px-6 lg:px-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#003893]/5 via-transparent to-[#DC143C]/5" />
-        
+
         <div className="relative max-w-[1600px] mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -110,15 +110,15 @@ export function About() {
                 About Us
               </span>
             </div>
-            
+
             <h1 className="text-5xl lg:text-7xl text-[#1A1A1B] tracking-tight mb-8" style={{ fontWeight: 700 }}>
               About Pan Pacific
               <br />
               <span className="opacity-40">Leading Cargo Company</span>
             </h1>
-            
+
             <p className="text-xl text-[#1A1A1B] opacity-60 leading-relaxed max-w-3xl">
-              Since 2011, Pan Pacific Shipping & Logistics Services Pvt. Ltd. has been Nepal's trusted partner for 
+              Since 2011, Pan Pacific Shipping & Logistics Services Pvt. Ltd. has been Nepal's trusted partner for
               international freight forwarding, connecting businesses to global markets with precision and reliability.
             </p>
           </motion.div>
@@ -138,7 +138,7 @@ export function About() {
             <h2 className="text-4xl lg:text-5xl text-[#1A1A1B] tracking-tight mb-4" style={{ fontWeight: 700 }}>
               Message from the
               <br />
-              <span className="opacity-40">Managing Directors</span>
+              <span className="opacity-40">Managing Director</span>
             </h2>
           </motion.div>
 
@@ -155,17 +155,17 @@ export function About() {
                 <div className="absolute inset-0 bg-gradient-to-br from-[#003893]/20 to-transparent z-10" />
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1758518727888-ffa196002e59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMGV4ZWN1dGl2ZSUyMHBvcnRyYWl0JTIwcHJvZmVzc2lvbmFsfGVufDF8fHx8MTc2ODQ2ODY0OXww&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="Managing Directors"
+                  alt="Managing Director"
                   className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
                 />
               </div>
-              
+
               <div className="mt-6 border-l-2 border-[#FFD700] pl-6">
                 <p className="text-2xl text-[#1A1A1B] mb-2" style={{ fontWeight: 600 }}>
-                  Tejman Tamang & Manoj Thapa
+                  Manoj Thapa
                 </p>
                 <p className="text-[#1A1A1B] opacity-40 tracking-[0.15em] uppercase font-mono text-sm">
-                  Managing Directors
+                  Managing Director
                 </p>
               </div>
             </motion.div>
@@ -179,23 +179,23 @@ export function About() {
               className="space-y-6"
             >
               <p className="text-lg text-[#1A1A1B] opacity-70 leading-relaxed">
-                When we founded Pan Pacific Shipping & Logistics Services in 2011, our vision was clear: to bridge 
-                Nepal's businesses with global markets through reliable, efficient, and customer-focused freight solutions. 
+                When we founded Pan Pacific Shipping & Logistics Services in 2011, our vision was clear: to bridge
+                Nepal's businesses with global markets through reliable, efficient, and customer-focused freight solutions.
                 Over the past 14 years, we've transformed that vision into reality.
               </p>
-              
+
               <p className="text-lg text-[#1A1A1B] opacity-70 leading-relaxed">
-                Operating from our headquarters in Thamel, Kathmandu, we've built strategic partnerships across the 
-                Middle East, Far East, USA, Europe, and Australia. Every shipment we handle—whether sea freight FCL/LCL, 
+                Operating from our headquarters in Thamel, Kathmandu, we've built strategic partnerships across the
+                Middle East, Far East, USA, Europe, and Australia. Every shipment we handle—whether sea freight FCL/LCL,
                 air cargo, break bulk, or complex DDU/DDP logistics—carries our commitment to excellence.
               </p>
-              
+
               <p className="text-lg text-[#1A1A1B] opacity-70 leading-relaxed">
-                What sets us apart is our deep understanding of Himalayan transit challenges and our unwavering dedication 
-                to on-time delivery. We treat your cargo as our own, ensuring it reaches its destination safely, securely, 
+                What sets us apart is our deep understanding of Himalayan transit challenges and our unwavering dedication
+                to on-time delivery. We treat your cargo as our own, ensuring it reaches its destination safely, securely,
                 and efficiently.
               </p>
-              
+
               <div className="pt-8 border-t border-[#1A1A1B]/10">
                 <p className="text-2xl text-[#003893] italic leading-relaxed" style={{ fontWeight: 600 }}>
                   "Your cargo, our commitment—
@@ -242,13 +242,13 @@ export function About() {
                 className="group bg-white p-12 hover:bg-[#F5F7F8] transition-all duration-500 relative overflow-hidden"
               >
                 <div className="absolute top-0 left-0 w-1 h-full bg-[#FFD700] transform scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-top" />
-                
+
                 <value.icon className="w-14 h-14 text-[#003893] mb-6 opacity-20 group-hover:opacity-100 transition-opacity duration-500" strokeWidth={1.5} />
-                
+
                 <h3 className="text-2xl text-[#1A1A1B] mb-4 tracking-tight" style={{ fontWeight: 700 }}>
                   {value.title}
                 </h3>
-                
+
                 <p className="text-[#1A1A1B] opacity-60 leading-relaxed">
                   {value.description}
                 </p>
@@ -295,14 +295,14 @@ export function About() {
                 <div className="absolute top-8 right-8 text-7xl font-mono text-[#1A1A1B] opacity-5 group-hover:opacity-10 transition-opacity duration-500">
                   {step.number}
                 </div>
-                
+
                 <div className="relative z-10">
                   <step.icon className="w-10 h-10 text-[#DC143C] mb-6" strokeWidth={1.5} />
-                  
+
                   <h3 className="text-2xl text-[#1A1A1B] mb-3 tracking-tight" style={{ fontWeight: 700 }}>
                     {step.title}
                   </h3>
-                  
+
                   <p className="text-[#1A1A1B] opacity-60 leading-relaxed text-sm">
                     {step.description}
                   </p>
@@ -384,7 +384,7 @@ export function About() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              
+
               <div className="absolute -bottom-6 -left-6 bg-[#DC143C] text-white px-8 py-6 z-20">
                 <p className="text-4xl font-mono" style={{ fontWeight: 700 }}>50+</p>
                 <p className="text-sm tracking-[0.15em] uppercase opacity-80">Global Ports</p>
@@ -393,7 +393,7 @@ export function About() {
           </div>
         </div>
       </section>
-      
+
       <Footer />
     </div>
   );

@@ -20,7 +20,7 @@ export function SEOContent() {
           Pan Pacific Shipping & Logistics Services Pvt. Ltd. is Nepal's leading international freight forwarding company, established in 2011 in Kathmandu. With over 14 years of expertise in Himalayan transit logistics, we specialize in sea freight, air freight, break bulk cargo, and DDU/DDP logistics solutions. As a trusted logistics partner in Nepal, we provide comprehensive customs clearance, cargo insurance, warehousing, and door-to-door delivery services for businesses across the Kathmandu Valley and throughout Nepal.
         </p>
         <p>
-          Our company operates from Thamel, Kathmandu, serving as the primary logistics hub for importers and exporters in Nepal. With PAN number 600633110, we are a fully licensed and registered freight forwarding company offering reliable international shipping solutions. Under the leadership of Managing Directors Tejman Tamang and Manoj Thapa, Pan Pacific has built a reputation for excellence in Nepal's logistics industry.
+          Our company operates from Thamel, Kathmandu, serving as the primary logistics hub for importers and exporters in Nepal. With PAN number 600633110, we are a fully licensed and registered freight forwarding company offering reliable international shipping solutions. Under the leadership of Managing Director Manoj Thapa, Pan Pacific has built a reputation for excellence in Nepal's logistics industry.
         </p>
       </section>
 
@@ -67,7 +67,7 @@ export function SEOContent() {
       {/* Destination Keywords - International */}
       <section>
         <h2>International Shipping Destinations from Nepal</h2>
-        
+
         <h3>Middle East Logistics from Nepal</h3>
         <p>
           UAE Shipping: Dubai Freight Services, Abu Dhabi Cargo, Sharjah Logistics, Ajman Shipping

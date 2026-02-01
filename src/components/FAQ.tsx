@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Search, 
-  ChevronDown, 
-  Phone, 
-  Mail, 
-  MessageCircle, 
+import {
+  Search,
+  ChevronDown,
+  Phone,
+  Mail,
+  MessageCircle,
   FileText,
   DollarSign,
   Truck,
@@ -48,7 +48,7 @@ const faqs: FAQItem[] = [
     question: 'Which countries do you ship to?',
     answer: 'We provide shipping services to over 200 countries worldwide, with specialized routes to the Middle East (UAE, Saudi Arabia, Qatar), Far East (China, Japan, Korea, Singapore), USA, Europe (UK, Germany, France), and Australia. Our primary hub is Tribhuvan International Airport in Kathmandu.'
   },
-  
+
   // Pricing & Payments
   {
     category: 'Pricing & Payments',
@@ -75,7 +75,7 @@ const faqs: FAQItem[] = [
     question: 'What is included in the DDP service cost?',
     answer: 'Our DDP (Delivered Duty Paid) service includes freight charges, insurance, customs clearance, import duties, taxes, and final delivery to the recipient. You pay one comprehensive fee with no surprises at destination—we handle all costs and paperwork.'
   },
-  
+
   // Customs & Documentation
   {
     category: 'Customs & Documentation',
@@ -102,7 +102,7 @@ const faqs: FAQItem[] = [
     question: 'Who pays customs duties and taxes?',
     answer: 'With DDU (Delivered Duty Unpaid), the recipient pays duties and taxes at destination. With DDP (Delivered Duty Paid), Pan Pacific pays all duties and taxes on your behalf—it\'s included in your shipping quote. We recommend DDP for hassle-free international shipping.'
   },
-  
+
   // Tracking
   {
     category: 'Tracking',
@@ -119,7 +119,7 @@ const faqs: FAQItem[] = [
     question: 'What if my tracking shows no updates?',
     answer: 'Tracking may not update immediately during transit or weekends. Sea freight updates are less frequent than air freight. If your tracking hasn\'t updated in 3 business days, contact our support team at +977 1 4216735 or csvpanpacific@wlink.com.np with your tracking number for immediate assistance.'
   },
-  
+
   // Services
   {
     category: 'Services',
@@ -146,7 +146,7 @@ const faqs: FAQItem[] = [
     question: 'Do you offer warehousing and storage?',
     answer: 'Yes, we provide secure warehousing facilities in Kathmandu for temporary storage, consolidation, and distribution. Our warehouse offers climate control, 24/7 security, and inventory management. Storage fees apply after the first 7 days of free storage.'
   },
-  
+
   // General
   {
     category: 'General',
@@ -161,7 +161,7 @@ const faqs: FAQItem[] = [
   {
     category: 'General',
     question: 'How experienced is Pan Pacific in logistics?',
-    answer: 'Pan Pacific Shipping & Logistics Services has been serving Nepal since 2011—that\'s 14 years of expertise in international freight forwarding. Our leadership team (MDs Tejman Tamang and Manoj Thapa) brings decades of combined experience, ensuring reliable, professional service for every shipment.'
+    answer: 'Pan Pacific Shipping & Logistics Services has been serving Nepal since 2011—that\'s 14 years of expertise in international freight forwarding. Our leadership team (MD: Manoj Thapa) brings decades of combined experience, ensuring reliable, professional service for every shipment.'
   },
   {
     category: 'General',
@@ -187,7 +187,7 @@ export function FAQ() {
 
   const filteredFAQs = faqs.filter(faq => {
     const matchesCategory = activeCategory === 'All' || faq.category === activeCategory;
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
       faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
@@ -239,11 +239,10 @@ export function FAQ() {
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}
-                  className={`px-6 py-2 rounded-full whitespace-nowrap transition-all ${
-                    activeCategory === category
+                  className={`px-6 py-2 rounded-full whitespace-nowrap transition-all ${activeCategory === category
                       ? 'bg-[#003893] text-white'
                       : 'bg-[#F5F7F8] text-[#1A1A1B] hover:bg-[#003893]/10'
-                  }`}
+                    }`}
                 >
                   {category}
                 </button>

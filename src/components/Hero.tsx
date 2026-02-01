@@ -4,6 +4,7 @@ import { ArrowRight, Package } from 'lucide-react';
 import logoImage from 'figma:asset/a364c891f5827be3c4014813b59cd9a43a29780d.png';
 import LiquidEther from './LiquidEther';
 import { ShippingAnimation } from './ShippingAnimation';
+import { PhoneHeader } from './PhoneHeader';
 
 export function Hero() {
   return (
@@ -28,7 +29,7 @@ export function Hero() {
           style={{ opacity: 0.22 }}
         />
       </div>
-      
+
       <div className="max-w-[1600px] mx-auto w-full relative z-10">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
@@ -50,7 +51,7 @@ export function Hero() {
                   Nepal Specialist
                 </span>
               </motion.div>
-              
+
               <motion.h1
                 initial={{ opacity: 0, y: 0 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -62,7 +63,7 @@ export function Hero() {
                 <br />
                 <span className="text-[#003893] text-[0.6em]">Shipping & Logistics</span>
               </motion.h1>
-              
+
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -79,7 +80,7 @@ export function Hero() {
               transition={{ delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4 pt-4"
             >
-              <a 
+              <a
                 href="#quote"
                 className="group bg-[#DC143C] text-white px-10 py-5 flex items-center justify-center gap-3 hover:bg-[#B8102E] transition-all duration-300"
               >
@@ -87,7 +88,7 @@ export function Hero() {
                 <span className="tracking-wide">Get Free Quote</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </a>
-              <a 
+              <a
                 href="#tracking"
                 className="border-2 border-[#003893] text-[#003893] px-10 py-5 hover:bg-[#003893] hover:text-white transition-all duration-300 flex items-center justify-center gap-3"
               >
@@ -99,7 +100,16 @@ export function Hero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7 }}
-              className="pt-8 font-mono text-xs text-[#1A1A1B] opacity-30 tracking-wider"
+              className="pt-6"
+            >
+              <PhoneHeader />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 }}
+              className="pt-4 font-mono text-xs text-[#1A1A1B] opacity-30 tracking-wider"
             >
               PAN: 600633110 · THAMEL, KATHMANDU
             </motion.div>
@@ -116,7 +126,7 @@ export function Hero() {
             <div className="absolute inset-0 bg-white/80 backdrop-blur-sm border border-[#003893]/10">
               <ShippingAnimation />
             </div>
-            
+
             {/* Floating Stats */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}

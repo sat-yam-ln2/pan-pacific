@@ -21,7 +21,7 @@ export function ShippingAnimation() {
       canvas.style.width = rect.width + 'px';
       canvas.style.height = rect.height + 'px';
     };
-    
+
     updateSize();
     window.addEventListener('resize', updateSize);
 
@@ -76,7 +76,7 @@ export function ShippingAnimation() {
       ctx.beginPath();
       ctx.arc(nepalX, nepalY, 12, 0, Math.PI * 2);
       ctx.fill();
-      
+
       // Nepal glow
       const nepalGlow = ctx.createRadialGradient(nepalX, nepalY, 0, nepalX, nepalY, 30);
       nepalGlow.addColorStop(0, 'rgba(220, 20, 60, 0.3)');
@@ -109,7 +109,7 @@ export function ShippingAnimation() {
       // Animate packages
       packages.forEach((pkg) => {
         pkg.progress += pkg.speed;
-        
+
         if (pkg.progress > 1) {
           pkg.progress = 0;
         }
@@ -132,15 +132,15 @@ export function ShippingAnimation() {
 
         // Draw package (small container icon)
         const size = 8;
-        
+
         // Package shadow
         ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
         ctx.fillRect(x - size / 2 + 2, y - size / 2 + 2, size, size);
-        
+
         // Package body
         ctx.fillStyle = '#003893';
         ctx.fillRect(x - size / 2, y - size / 2, size, size);
-        
+
         // Package highlight
         ctx.strokeStyle = '#FFD700';
         ctx.lineWidth = 1;
@@ -151,7 +151,7 @@ export function ShippingAnimation() {
           const trailT = pkg.progress - 0.1;
           const trailX = (1 - trailT) * (1 - trailT) * startX + 2 * (1 - trailT) * trailT * midX + trailT * trailT * endX;
           const trailY = (1 - trailT) * (1 - trailT) * startY + 2 * (1 - trailT) * trailT * midY + trailT * trailT * endY;
-          
+
           ctx.strokeStyle = 'rgba(0, 56, 147, 0.3)';
           ctx.lineWidth = 2;
           ctx.beginPath();

@@ -2,11 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 
 const directors = [
-  {
-    name: 'Tejman Tamang',
-    title: 'Managing Director',
-    signature: 'TT'
-  },
+
   {
     name: 'Manoj Thapa',
     title: 'Managing Director',
@@ -35,7 +31,7 @@ export function Directors() {
           <h2 className="text-4xl lg:text-6xl text-[#1A1A1B] tracking-tight" style={{ fontWeight: 700 }}>
             Meet The
             <br />
-            <span className="opacity-40">Directors</span>
+            <span className="opacity-40">Director</span>
           </h2>
         </motion.div>
 
@@ -61,12 +57,12 @@ export function Directors() {
                       {director.title}
                     </div>
                   </div>
-                  
+
                   <div className="pt-6 border-t border-[#1A1A1B]/10">
                     <p className="text-[#1A1A1B] opacity-50 leading-relaxed mb-8">
                       Leading Pan Pacific with vision and expertise, driving excellence in Himalayan logistics and fostering global partnerships.
                     </p>
-                    
+
                     {/* Signature */}
                     <div className="flex items-end justify-between">
                       <div className="text-5xl lg:text-6xl text-[#FFD700] opacity-30 italic tracking-wide" style={{ fontFamily: 'cursive', fontWeight: 300 }}>

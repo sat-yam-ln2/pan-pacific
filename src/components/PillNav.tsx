@@ -10,7 +10,7 @@ interface NavItem {
 }
 
 interface PillNavProps {
-  logo: string;
+  logo?: string;
   logoAlt?: string;
   items: NavItem[];
   activeHref?: string;
@@ -107,7 +107,7 @@ const PillNav = ({
     window.addEventListener('resize', onResize);
 
     if (document.fonts?.ready) {
-      document.fonts.ready.then(layout).catch(() => {});
+      document.fonts.ready.then(layout).catch(() => { });
     }
 
     const menu = mobileMenuRef.current;
@@ -242,7 +242,7 @@ const PillNav = ({
             {items.map((item, i) => {
               const isRoute = item.href.startsWith('/');
               const isActive = activeHref === item.href;
-              
+
               if (isRoute) {
                 return (
                   <li key={item.href || `item-${i}`} role="none">
@@ -271,7 +271,7 @@ const PillNav = ({
                   </li>
                 );
               }
-              
+
               return (
                 <li key={item.href || `item-${i}`} role="none">
                   <a
@@ -318,7 +318,7 @@ const PillNav = ({
           {items.map((item, i) => {
             const isRoute = item.href.startsWith('/');
             const isActive = activeHref === item.href;
-            
+
             if (isRoute) {
               return (
                 <li key={item.href || `mobile-item-${i}`}>
@@ -332,7 +332,7 @@ const PillNav = ({
                 </li>
               );
             }
-            
+
             return (
               <li key={item.href || `mobile-item-${i}`}>
                 <a

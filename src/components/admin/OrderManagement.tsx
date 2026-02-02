@@ -261,26 +261,27 @@ export function OrderManagement({ shipments, onUpdateShipments, onRefresh }: Ord
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-[#1A1A1B]">Order Management</h2>
-          <p className="text-[#1A1A1B]/60 mt-1">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1B]">Order Management</h2>
+          <p className="text-sm md:text-base text-[#1A1A1B]/60 mt-1">
             Manage and track all shipments
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
           <button
             onClick={handleExportCSV}
-            className="px-4 py-2 border-2 border-[#003893] text-[#003893] hover:bg-[#003893] hover:text-white rounded-lg transition-colors flex items-center gap-2"
+            className="px-3 md:px-4 py-2 border-2 border-[#003893] text-[#003893] hover:bg-[#003893] hover:text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-sm md:text-base"
           >
             <Download size={18} />
-            Export CSV
+            <span className="hidden sm:inline">Export CSV</span>
+            <span className="sm:hidden">Export</span>
           </button>
           <button
             onClick={handleCreateShipment}
-            className="px-4 py-2 bg-[#003893] hover:bg-[#002a6b] text-white rounded-lg transition-colors flex items-center gap-2 font-semibold"
+            className="px-3 md:px-4 py-2 bg-[#003893] hover:bg-[#002a6b] text-white rounded-lg transition-colors flex items-center justify-center gap-2 font-semibold text-sm md:text-base"
           >
             <Plus size={18} />
             Add New Shipment
@@ -289,18 +290,18 @@ export function OrderManagement({ shipments, onUpdateShipments, onRefresh }: Ord
       </div>
 
       {/* Controls Bar */}
-      <div className="bg-white p-6 rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm">
+      <div className="bg-white p-4 md:p-6 rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm">
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
           <div className="flex-1 flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
             {/* Search */}
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#1A1A1B]/40" size={20} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#1A1A1B]/40" size={18} />
               <input
                 type="text"
-                placeholder="Search by tracking ID, customer, location..."
+                placeholder="Search tracking ID, customer..."
                 value={searchQuery}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border-2 border-[#1A1A1B]/20 rounded-lg focus:outline-none focus:border-[#003893]"
+                className="w-full pl-10 pr-3 md:pr-4 py-2 text-sm md:text-base border-2 border-[#1A1A1B]/20 rounded-lg focus:outline-none focus:border-[#003893]"
               />
             </div>
 
@@ -308,7 +309,7 @@ export function OrderManagement({ shipments, onUpdateShipments, onRefresh }: Ord
             <select
               value={statusFilter}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border-2 border-[#1A1A1B]/20 rounded-lg focus:outline-none focus:border-[#003893]"
+              className="px-3 md:px-4 py-2 text-sm md:text-base border-2 border-[#1A1A1B]/20 rounded-lg focus:outline-none focus:border-[#003893] w-full sm:w-auto"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -323,7 +324,7 @@ export function OrderManagement({ shipments, onUpdateShipments, onRefresh }: Ord
             <select
               value={serviceFilter}
               onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setServiceFilter(e.target.value)}
-              className="px-4 py-2 border-2 border-[#1A1A1B]/20 rounded-lg focus:outline-none focus:border-[#003893]"
+              className="px-3 md:px-4 py-2 text-sm md:text-base border-2 border-[#1A1A1B]/20 rounded-lg focus:outline-none focus:border-[#003893] w-full sm:w-auto"
             >
               <option value="all">All Services</option>
               <option value="air-freight">Air Freight</option>
@@ -337,7 +338,85 @@ export function OrderManagement({ shipments, onUpdateShipments, onRefresh }: Ord
 
       {/* Shipments Table */}
       <div className="bg-white rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile Card View */}
+        <div className="block lg:hidden">
+          {paginatedShipments.length === 0 ? (
+            <div className="p-8 text-center text-[#1A1A1B]/60">
+              No shipments found
+            </div>
+          ) : (
+            <div className="divide-y divide-[#1A1A1B]/10">
+              {paginatedShipments.map((shipment, index) => {
+                const ServiceIcon = serviceIcons[shipment.serviceType];
+                return (
+                  <motion.div
+                    key={shipment.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="p-4 hover:bg-[#F5F7F8] transition-colors"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="font-mono text-sm font-semibold text-[#003893]">
+                            {shipment.trackingId}
+                          </span>
+                          <p className="text-sm font-semibold text-[#1A1A1B] mt-1">{shipment.customerName}</p>
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold border ${statusColors[shipment.status]}`}>
+                          {shipment.status.replace('-', ' ')}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-[#1A1A1B]/70">
+                        <span className="truncate">{shipment.origin}</span>
+                        <span className="text-[#FFD700]">→</span>
+                        <span className="truncate">{shipment.destination}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-[#1A1A1B]/60">
+                        <div className="flex items-center gap-1">
+                          <ServiceIcon size={14} />
+                          <span>{shipment.serviceType.replace('-', ' ')}</span>
+                        </div>
+                        <span>{new Date(shipment.createdDate).toLocaleDateString()}</span>
+                      </div>
+                      <div className="flex gap-2 pt-2">
+                        <button
+                          onClick={() => handleViewDetails(shipment)}
+                          className="flex-1 px-3 py-2 bg-[#F5F7F8] hover:bg-[#003893] hover:text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
+                        >
+                          <Eye size={16} />
+                          View
+                        </button>
+                        <button
+                          onClick={() => handleEditShipment(shipment)}
+                          className="flex-1 px-3 py-2 bg-[#F5F7F8] hover:bg-[#003893] hover:text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
+                        >
+                          <Edit size={16} />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteShipment(shipment.id, shipment.trackingId)}
+                          disabled={isDeleting === shipment.id}
+                          className="px-3 py-2 bg-red-50 hover:bg-red-600 hover:text-white text-red-600 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center"
+                        >
+                          {isDeleting === shipment.id ? (
+                            <Loader2 className="animate-spin" size={16} />
+                          ) : (
+                            <Trash2 size={16} />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        
+        {/* Desktop Table View */}
+        <div className="hidden lg:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-[#F5F7F8] border-b-2 border-[#1A1A1B]/10">
               <tr>

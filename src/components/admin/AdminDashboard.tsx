@@ -140,22 +140,22 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white p-6 rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm"
+          className="bg-white p-4 md:p-6 rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm"
         >
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-[#003893]/10 rounded-lg flex items-center justify-center">
-              <Package className="text-[#003893]" size={24} />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-[#003893]/10 rounded-lg flex items-center justify-center">
+              <Package className="text-[#003893]" size={20} />
             </div>
-            <span className="text-3xl font-bold text-[#1A1A1B]">{stats.total}</span>
+            <span className="text-2xl md:text-3xl font-bold text-[#1A1A1B]">{stats.total}</span>
           </div>
-          <h3 className="text-sm font-semibold text-[#1A1A1B]/60">Total Shipments</h3>
+          <h3 className="text-xs md:text-sm font-semibold text-[#1A1A1B]/60">Total Shipments</h3>
           <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
             <TrendingUp size={12} />
             +12% from last month
@@ -166,15 +166,15 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white p-6 rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm"
+          className="bg-white p-4 md:p-6 rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm"
         >
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Truck className="text-blue-600" size={24} />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <Truck className="text-blue-600" size={20} />
             </div>
-            <span className="text-3xl font-bold text-[#1A1A1B]">{stats.active}</span>
+            <span className="text-2xl md:text-3xl font-bold text-[#1A1A1B]">{stats.active}</span>
           </div>
-          <h3 className="text-sm font-semibold text-[#1A1A1B]/60">Active Shipments</h3>
+          <h3 className="text-xs md:text-sm font-semibold text-[#1A1A1B]/60">Active Shipments</h3>
           <p className="text-xs text-blue-600 mt-1">Currently in transit</p>
         </motion.div>
 
@@ -182,15 +182,15 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white p-6 rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm"
+          className="bg-white p-4 md:p-6 rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm"
         >
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <CheckCircle className="text-green-600" size={24} />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <CheckCircle className="text-green-600" size={20} />
             </div>
-            <span className="text-3xl font-bold text-[#1A1A1B]">{stats.delivered}</span>
+            <span className="text-2xl md:text-3xl font-bold text-[#1A1A1B]">{stats.delivered}</span>
           </div>
-          <h3 className="text-sm font-semibold text-[#1A1A1B]/60">Delivered This Month</h3>
+          <h3 className="text-xs md:text-sm font-semibold text-[#1A1A1B]/60">Delivered This Month</h3>
           <p className="text-xs text-green-600 mt-1">98.5% on-time rate</p>
         </motion.div>
 
@@ -198,15 +198,15 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="bg-white p-6 rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm"
+          className="bg-white p-4 md:p-6 rounded-xl border-2 border-[#1A1A1B]/10 shadow-sm"
         >
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-              <Clock className="text-yellow-600" size={24} />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+              <Clock className="text-yellow-600" size={20} />
             </div>
-            <span className="text-3xl font-bold text-[#1A1A1B]">{stats.pending}</span>
+            <span className="text-2xl md:text-3xl font-bold text-[#1A1A1B]">{stats.pending}</span>
           </div>
-          <h3 className="text-sm font-semibold text-[#1A1A1B]/60">Pending Deliveries</h3>
+          <h3 className="text-xs md:text-sm font-semibold text-[#1A1A1B]/60">Pending Deliveries</h3>
           <p className="text-xs text-yellow-600 mt-1">Awaiting pickup</p>
         </motion.div>
 
@@ -214,15 +214,15 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="bg-gradient-to-br from-[#003893] to-[#002a6b] p-6 rounded-xl shadow-lg text-white"
+          className="bg-gradient-to-br from-[#003893] to-[#002a6b] p-4 md:p-6 rounded-xl shadow-lg text-white"
         >
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-              <DollarSign className="text-[#FFD700]" size={24} />
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-lg flex items-center justify-center">
+              <DollarSign className="text-[#FFD700]" size={20} />
             </div>
-            <span className="text-3xl font-bold">${(stats.revenue / 1000).toFixed(1)}K</span>
+            <span className="text-2xl md:text-3xl font-bold">${(stats.revenue / 1000).toFixed(1)}K</span>
           </div>
-          <h3 className="text-sm font-semibold text-white/80">Monthly Revenue</h3>
+          <h3 className="text-xs md:text-sm font-semibold text-white/80">Monthly Revenue</h3>
           <p className="text-xs text-[#FFD700] mt-1 flex items-center gap-1">
             <TrendingUp size={12} />
             +18% from last month
@@ -231,7 +231,7 @@ export function AdminDashboard({ shipments }: AdminDashboardProps) {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Monthly Shipments Chart */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

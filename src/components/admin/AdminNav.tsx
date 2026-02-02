@@ -35,7 +35,7 @@ export function AdminNav({ adminUser, onLogout, isMobileMenuOpen, setIsMobileMen
   return (
     <>
       {/* Top Header */}
-      <header className="bg-gradient-to-r from-[#003893] to-[#002a6b] text-white px-6 py-4 sticky top-0 z-50 shadow-lg">
+      <header className="bg-gradient-to-r from-[#003893] to-[#002a6b] text-white px-4 md:px-6 py-3 md:py-4 sticky top-0 z-50 shadow-lg">
         <div className="max-w-[1800px] mx-auto flex items-center justify-between">
           {/* Left: Logo & Title */}
           <div className="flex items-center gap-4">
@@ -46,8 +46,8 @@ export function AdminNav({ adminUser, onLogout, isMobileMenuOpen, setIsMobileMen
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
             <div>
-              <h1 className="text-2xl font-bold">Admin Panel</h1>
-              <p className="text-sm text-white/70">Pan Pacific Shipping & Logistics</p>
+              <h1 className="text-xl md:text-2xl font-bold">Admin Panel</h1>
+              <p className="text-xs md:text-sm text-white/70 hidden sm:block">Pan Pacific Shipping & Logistics</p>
             </div>
           </div>
 
@@ -63,8 +63,8 @@ export function AdminNav({ adminUser, onLogout, isMobileMenuOpen, setIsMobileMen
               <p className="text-xs text-white/70">{new Date().toLocaleTimeString()}</p>
             </div>
 
-            <div className="flex items-center gap-3 pl-6 border-l border-white/20">
-              <div className="w-10 h-10 bg-[#FFD700] rounded-full flex items-center justify-center font-bold text-[#003893]">
+            <div className="flex items-center gap-2 md:gap-3 pl-3 md:pl-6 border-l border-white/20">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-[#FFD700] rounded-full flex items-center justify-center font-bold text-[#003893] text-sm md:text-base">
                 {adminUser.avatar}
               </div>
               <div className="hidden md:block">
@@ -75,7 +75,7 @@ export function AdminNav({ adminUser, onLogout, isMobileMenuOpen, setIsMobileMen
 
             <button
               onClick={onLogout}
-              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors flex items-center gap-2"
+              className="px-3 md:px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors flex items-center gap-2 text-sm md:text-base"
             >
               <LogOut size={18} />
               <span className="hidden md:inline">Logout</span>

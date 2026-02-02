@@ -292,8 +292,8 @@ export function UnifiedAdminPanel() {
           setIsMobileMenuOpen={setIsMobileMenuOpen}
         />
 
-        <div className="lg:ml-64 pt-6">
-          <div className="max-w-[1800px] mx-auto px-6 py-8">
+        <div className="lg:ml-64 pt-4 md:pt-6">
+          <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-4 md:py-8">
             {isLoadingShipments ? (
               <div className="flex items-center justify-center py-20">
                 <Loader2 className="animate-spin text-[#003893]" size={48} />

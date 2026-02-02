@@ -31,34 +31,37 @@ const navItems = [
 function AppContent() {
   const location = useLocation();
   const currentPath = location.pathname;
+  const isAdminPage = currentPath.startsWith('/admin');
 
   return (
     <div className="relative bg-[#F5F7F8] overflow-hidden">
       <NepalMotif />
       <VerticalBadge />
-      <FloatingButtons />
+      {!isAdminPage && <FloatingButtons />}
 
-      {/* Logo and Navigation - Left Aligned */}
-      <div className="fixed top-0 left-0 w-full z-[999] flex items-center justify-between gap-4 px-6 lg:px-20 py-4 bg-[#F5F7F8]/95 backdrop-blur-md border-b border-[#1A1A1B]/5 transition-all duration-300">
-        <a
-          href="/"
-          className="flex-shrink-0 w-16 h-16 hover:scale-105 transition-all duration-300 relative rounded-lg bg-white/80 backdrop-blur-sm shadow-[0_0_20px_rgba(255,255,255,0.9)] p-2"
-          aria-label="Pan Pacific Shipping & Logistics Home"
-        >
-          <img src={logoImage} alt="Pan Pacific Logo" className="w-full h-full object-contain" />
-        </a>
+      {/* Logo and Navigation - Hidden on admin pages */}
+      {!isAdminPage && (
+        <div className="fixed top-0 left-0 w-full z-[999] flex items-center justify-between gap-4 px-6 lg:px-20 py-4 bg-[#F5F7F8]/95 backdrop-blur-md border-b border-[#1A1A1B]/5 transition-all duration-300">
+          <a
+            href="/"
+            className="flex-shrink-0 w-16 h-16 hover:scale-105 transition-all duration-300 relative rounded-lg bg-white/80 backdrop-blur-sm shadow-[0_0_20px_rgba(255,255,255,0.9)] p-2"
+            aria-label="Pan Pacific Shipping & Logistics Home"
+          >
+            <img src={logoImage} alt="Pan Pacific Logo" className="w-full h-full object-contain" />
+          </a>
 
-        <div className="flex-1 flex justify-end">
-          <PillNav
-            items={navItems}
-            activeHref={currentPath}
-            baseColor="#003893"
-            pillColor="#F5F7F8"
-            hoveredPillTextColor="#F5F7F8"
-            pillTextColor="#003893"
-          />
+          <div className="flex-1 flex justify-end">
+            <PillNav
+              items={navItems}
+              activeHref={currentPath}
+              baseColor="#003893"
+              pillColor="#F5F7F8"
+              hoveredPillTextColor="#F5F7F8"
+              pillTextColor="#003893"
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="relative z-10">
         <Routes>

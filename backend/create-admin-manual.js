@@ -17,8 +17,8 @@ async function createAdmin() {
             console.log('Creating default admin user...');
             const admin = new Admin({
                 name: 'Admin User',
-                email: 'admin@panpacific.com',
-                password: 'capitalcargo123$',
+                email: 'admin2@panpacific.com',
+                password: 'capitalcargo123$#$#',
                 role: 'admin'
             });
 

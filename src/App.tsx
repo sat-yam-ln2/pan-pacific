@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router';
 import PillNav from './components/PillNav';
 import { HomePage } from './components/HomePage';
 import { ServicesPage } from './components/ServicesPage';
@@ -74,6 +74,7 @@ function AppContent() {
           <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/login" element={<Navigate to="/admin" replace />} />
           <Route path="/admin-tracking" element={<AdminTracking />} />
           <Route path="/admin/*" element={<UnifiedAdminPanel />} />
         </Routes>

@@ -12,7 +12,8 @@ const { storageAdapter } = require('./data/storageConfig');
 
 const app = express();
 const PORT = process.env.PORT || 443;
-const HTTP_PORT = process.env.HTTP_PORT || 80;
+const HTTP_PORT = process.env.HTTP_PORT ? parseInt(process.env.HTTP_PORT, 10) : null;
+const ENABLE_HTTP_REDIRECT = process.env.ENABLE_HTTP_REDIRECT === 'true';
 
 // SSL Certificate paths (Let's Encrypt default location)
 const SSL_KEY_PATH = process.env.SSL_KEY_PATH || '/etc/letsencrypt/live/cargocapital.com/privkey.pem';
@@ -229,6 +230,11 @@ function startHttpRedirect() {
     res.redirect(301, `https://${req.headers.host}${req.url}`);
   });
 
+  if (!HTTP_PORT) {
+    console.log('🔀 HTTP redirect server disabled (HTTP_PORT not set)');
+    return;
+  }
+
   http.createServer(redirectApp).listen(HTTP_PORT, '0.0.0.0', () => {
     console.log(`🔀 HTTP redirect server running on port ${HTTP_PORT} (redirects to HTTPS)`);
   });
@@ -260,8 +266,12 @@ async function startServer() {
         console.log(`✅ SSL/TLS enabled with Let's Encrypt certificates`);
       });
 
-      // Start HTTP redirect server
-      startHttpRedirect();
+      // Start HTTP redirect server only when explicitly enabled
+      if (ENABLE_HTTP_REDIRECT) {
+        startHttpRedirect();
+      } else {
+        console.log('🔀 HTTP redirect server not enabled (set ENABLE_HTTP_REDIRECT=true to enable)');
+      }
 
     } else {
       // Fallback to HTTP if SSL certificates not found

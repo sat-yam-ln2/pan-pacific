@@ -81,7 +81,7 @@ export function Hero() {
               className="flex flex-col sm:flex-row gap-4 pt-4"
             >
               <a
-                href="#quote"
+                href="/quote"
                 className="group bg-[#DC143C] text-white px-10 py-5 flex items-center justify-center gap-3 hover:bg-[#B8102E] transition-all duration-300"
               >
                 <Package className="w-5 h-5" />
@@ -89,7 +89,7 @@ export function Hero() {
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </a>
               <a
-                href="#tracking"
+                href="/tracking"
                 className="border-2 border-[#003893] text-[#003893] px-10 py-5 hover:bg-[#003893] hover:text-white transition-all duration-300 flex items-center justify-center gap-3"
               >
                 <span className="tracking-wide">Track Shipment</span>

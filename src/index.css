@@ -3553,8 +3553,16 @@
 @media (width <= 768px) {
   .pill-nav {
     background: none;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     width: 100%;
+    padding: 0;
+  }
+
+  .pill-nav-items {
+    width: 100%;
+  }
+
+  .pill-list {
     padding: 0;
   }
 }

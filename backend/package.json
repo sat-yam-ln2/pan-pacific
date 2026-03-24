@@ -12,7 +12,8 @@
     "init:db": "node scripts/initDatabase.js",
     "test:mongodb": "node test-mongodb.js",
     "migrate:mongodb": "node migrate-to-mongodb.js",
-    "test:email": "node services/sendTestEmail.js"
+    "test:email": "node services/sendTestEmail.js",
+    "test:email:only": "node test-email-simple.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

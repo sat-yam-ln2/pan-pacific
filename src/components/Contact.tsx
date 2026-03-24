@@ -225,19 +225,10 @@ export function Contact() {
                 </div>
                 <h3 className="text-xl font-bold mb-3">Call Us</h3>
                 <div className="space-y-2 text-white/80">
-                  <a href="tel:+97714216735" className="block hover:text-white transition-colors">
-                    +977 1 4216735
-                  </a>
-                  <a href="tel:+97714216862" className="block hover:text-white transition-colors">
-                    +977 1 4216862
-                  </a>
-                  <a href="tel:+97714152027" className="block hover:text-white transition-colors">
-                    +977 1 4152027
-                  </a>
                   <div className="pt-2 mt-2 border-t border-white/20">
                     <p className="text-xs mb-1">Director Contact:</p>
-                    <a href="tel:+9779841243981" className="hover:text-white transition-colors">
-                      +977 9841243981
+                    <a href="tel:9801061233" className="hover:text-white transition-colors">
+                      980-1061233
                     </a>
                   </div>
                 </div>
@@ -256,20 +247,20 @@ export function Contact() {
                 <h3 className="text-xl font-bold mb-3">Email Us</h3>
                 <div className="space-y-2">
                   <a 
-                    href="mailto:csvpanpacific@wlink.com.np" 
+                    href="mailto:into@panpacific.com.np" 
                     className="block text-[#1A1A1B]/80 hover:text-[#1A1A1B] transition-colors break-all"
                   >
-                    csvpanpacific@wlink.com.np
+                    into@panpacific.com.np
                   </a>
                   <div className="pt-2 mt-2 border-t border-[#1A1A1B]/20">
                     <p className="text-xs mb-1">Website:</p>
                     <a 
-                      href="https://www.pslnepal.com" 
+                      href="http://panpacific.com.np/" 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="hover:underline"
                     >
-                      www.pslnepal.com
+                      http://panpacific.com.np/
                     </a>
                   </div>
                 </div>
@@ -621,7 +612,7 @@ export function Contact() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a
-                  href="tel:+97714216735"
+                  href="tel:9801061233"
                   className="px-8 py-4 bg-[#DC143C] hover:bg-[#a00f2d] text-white font-semibold rounded-lg transition-colors"
                 >
                   Call Now

@@ -68,7 +68,7 @@ const faqs: FAQItem[] = [
   {
     category: 'Pricing & Payments',
     question: 'Do you offer discounts for bulk shipments?',
-    answer: 'Yes, we offer competitive rates for high-volume shippers and regular business clients. FCL shipments and long-term contracts receive preferential pricing. Contact our sales team at info@panpacificnepal.com to discuss volume discounts tailored to your needs.'
+    answer: 'Yes, we offer competitive rates for high-volume shippers and regular business clients. FCL shipments and long-term contracts receive preferential pricing. Contact our sales team at into@panpacific.com.np to discuss volume discounts tailored to your needs.'
   },
   {
     category: 'Pricing & Payments',
@@ -117,7 +117,7 @@ const faqs: FAQItem[] = [
   {
     category: 'Tracking',
     question: 'What if my tracking shows no updates?',
-    answer: 'Tracking may not update immediately during transit or weekends. Sea freight updates are less frequent than air freight. If your tracking hasn\'t updated in 3 business days, contact our support team at +977 1 4216735 or csvpanpacific@wlink.com.np with your tracking number for immediate assistance.'
+    answer: 'Tracking may not update immediately during transit or weekends. Sea freight updates are less frequent than air freight. If your tracking hasn\'t updated in 3 business days, contact our support team at 980-1061233 or into@panpacific.com.np with your tracking number for immediate assistance.'
   },
 
   // Services
@@ -342,11 +342,8 @@ export function FAQ() {
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Phone Support</h3>
                 <p className="text-sm text-white/80 mb-3">Sun-Fri, 9AM-6PM NPT</p>
-                <a href="tel:+97714216735" className="text-[#FFD700] hover:underline block text-sm">
-                  +977 1 4216735
-                </a>
-                <a href="tel:+97714216862" className="text-[#FFD700] hover:underline block text-sm mt-1">
-                  +977 1 4216862
+                <a href="tel:9801061233" className="text-[#FFD700] hover:underline block text-sm">
+                  980-1061233
                 </a>
               </motion.div>
 
@@ -360,8 +357,8 @@ export function FAQ() {
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Email Us</h3>
                 <p className="text-sm text-white/80 mb-3">24/7 Response</p>
-                <a href="mailto:csvpanpacific@wlink.com.np" className="text-[#FFD700] hover:underline break-all text-sm">
-                  csvpanpacific@wlink.com.np
+                <a href="mailto:into@panpacific.com.np" className="text-[#FFD700] hover:underline break-all text-sm">
+                  into@panpacific.com.np
                 </a>
               </motion.div>
 
@@ -511,7 +508,7 @@ export function FAQ() {
                 Get Free Quote
               </Link>
               <a
-                href="tel:+97714216735"
+                href="tel:9801061233"
                 className="px-8 py-4 bg-white hover:bg-[#F5F7F8] text-[#003893] font-semibold rounded-lg transition-colors"
               >
                 Call Now

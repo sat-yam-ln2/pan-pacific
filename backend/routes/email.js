@@ -3,27 +3,30 @@ const nodemailer = require('nodemailer');
 const router = express.Router();
 
 // Email configuration using environment variables
-// Use MAIL (or EMAIL_USER) = your email, EMAIL_APP_PASSWORD (or EMAIL_PASS) = 16-digit app password
-const getEmailUser = () => process.env.MAIL || process.env.EMAIL_USER;
-const getEmailPass = () => process.env.EMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
+// Supports both SMTP_* (hosting panel) and EMAIL_*/MAIL aliases.
+const getEmailUser = () => process.env.SMTP_USER || process.env.MAIL || process.env.EMAIL_USER;
+const getEmailPass = () => process.env.SMTP_PASS || process.env.EMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
+const getEmailHost = () => process.env.SMTP_HOST || process.env.EMAIL_HOST;
+const getEmailPort = () => Number(process.env.SMTP_PORT || process.env.EMAIL_PORT || 465);
 
 const createTransporter = () => {
   const user = getEmailUser();
   const pass = getEmailPass();
 
   if (!user || !pass) {
-    throw new Error('Email not configured: set MAIL and EMAIL_APP_PASSWORD (or EMAIL_USER and EMAIL_PASS) in .env');
+    throw new Error('Email not configured: set SMTP_USER/SMTP_PASS (or MAIL/EMAIL_APP_PASSWORD, EMAIL_USER/EMAIL_PASS) in .env');
   }
 
-  // If explicit SMTP host is provided, prefer that (Zoho recommended)
-  if (process.env.EMAIL_HOST) {
-    const port = Number(process.env.EMAIL_PORT || 465);
+  // If explicit SMTP host is provided, prefer that.
+  const host = getEmailHost();
+  if (host) {
+    const port = getEmailPort();
     const secure = typeof process.env.EMAIL_SECURE === 'string'
       ? process.env.EMAIL_SECURE.toLowerCase() === 'true'
       : port === 465;
 
     return nodemailer.createTransport({
-      host: process.env.EMAIL_HOST,
+      host,
       port,
       secure,
       auth: { user, pass }

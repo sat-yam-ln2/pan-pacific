@@ -221,19 +221,10 @@ export function Footer() {
                 <li className="flex items-start gap-3 text-[#1A1A1B]/60">
                   <Phone className="w-5 h-5 flex-shrink-0 mt-1 text-[#FFD700]" />
                   <div className="space-y-1">
-                    <a href="tel:+97714216735" className="hover:text-[#003893] transition-colors block">
-                      +977 1 4216735
-                    </a>
-                    <a href="tel:+97714216862" className="hover:text-[#003893] transition-colors block">
-                      +977 1 4216862
-                    </a>
-                    <a href="tel:+97714152027" className="hover:text-[#003893] transition-colors block">
-                      +977 1 4152027
-                    </a>
                     <div className="pt-2 border-t border-[#1A1A1B]/10 mt-2">
                       <p className="text-xs text-[#1A1A1B]/40 mb-1">Director Contact:</p>
-                      <a href="tel:+9779841243981" className="hover:text-[#003893] transition-colors block">
-                        +977 9841243981
+                      <a href="tel:9801061233" className="hover:text-[#003893] transition-colors block">
+                        980-1061233
                       </a>
                     </div>
                   </div>
@@ -241,16 +232,16 @@ export function Footer() {
                 <li className="flex items-start gap-3 text-[#1A1A1B]/60">
                   <Mail className="w-5 h-5 flex-shrink-0 mt-1 text-[#FFD700]" />
                   <div>
-                    <a href="mailto:csvpanpacific@wlink.com.np" className="hover:text-[#FFD700] transition-colors break-all">
-                      csvpanpacific@wlink.com.np
+                    <a href="mailto:into@panpacific.com.np" className="hover:text-[#FFD700] transition-colors break-all">
+                      into@panpacific.com.np
                     </a>
                   </div>
                 </li>
                 <li className="flex items-start gap-3 text-[#1A1A1B]/60">
                   <Globe className="w-5 h-5 flex-shrink-0 mt-1 text-[#FFD700]" />
                   <div>
-                    <a href="https://www.pslnepal.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#FFD700] transition-colors">
-                      www.pslnepal.com
+                    <a href="http://panpacific.com.np/" target="_blank" rel="noopener noreferrer" className="hover:text-[#FFD700] transition-colors">
+                      http://panpacific.com.np/
                     </a>
                   </div>
                 </li>

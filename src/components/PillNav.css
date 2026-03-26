@@ -27,11 +27,18 @@
 
 @media (max-width: 768px) {
   .pill-nav {
-    width: auto;
-    justify-content: flex-end;
+    width: 100%;
     padding: 0;
     background: transparent;
     height: auto;
+  }
+
+  .pill-nav-items {
+    width: 100%;
+  }
+
+  .pill-list {
+    padding: 0;
   }
 }
 
